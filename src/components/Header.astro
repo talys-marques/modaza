@@ -30,7 +30,7 @@ const links = [
             <span class="sr-only">Abrir categorias de produtos</span>
           </button>
           <div class="mega" id="mega-produtos">
-            <div class="container mega__inner">
+            <div class="container mega__inner" style={`--cols: ${pilares.length}`}>
               {
                 pilares.map((pilar) => (
                   <div class="mega__col" data-pilar={pilar.slug}>
@@ -248,7 +248,7 @@ const links = [
 
   .mega__inner {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)) auto;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr)) auto;
     gap: 2rem;
     padding-block: 2rem 2.25rem;
   }
