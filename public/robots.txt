@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /satisfacao/
+
+Sitemap: https://modaza.com.br/sitemap-index.xml

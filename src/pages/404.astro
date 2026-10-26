@@ -1,0 +1,70 @@
+---
+import { url } from '../lib/url.mjs';
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { catalogo } from '../lib/catalogo.mjs';
+
+const { pilares } = catalogo();
+---
+
+<Base title="Página não encontrada" noindex>
+  <section class="section">
+    <div class="container notfound">
+      <span class="eyebrow">Erro 404</span>
+      <h1>Esta página não existe mais.</h1>
+      <p class="lead">O endereço pode ter mudado com o novo site. Busque o produto pelo nome ou pelo código (SKU).</p>
+      <form class="notfound__search" action={url('/produtos/')} method="get" role="search">
+        <label for="busca-404" class="sr-only">Buscar produtos</label>
+        <input class="input" id="busca-404" name="busca" type="search" placeholder="Ex.: porcelanato, torneira, 100026274" />
+        <button class="btn" type="submit"><Icon name="search" /> Buscar</button>
+      </form>
+      <ul class="chips">
+        {
+          pilares.map((p) => (
+            <li>
+              <a class="chip" href={p.url}>
+                {p.nome}
+              </a>
+            </li>
+          ))
+        }
+        <li><a class="chip" href={url('/catalogos/')}>Catálogos</a></li>
+        <li><a class="chip" href={url('/atendimento-ao-cliente/')}>Atendimento</a></li>
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .notfound {
+    display: grid;
+    justify-items: start;
+    gap: 1.25rem;
+    max-width: 46rem;
+  }
+
+  .notfound h1 {
+    font-size: var(--step-4);
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+
+  .notfound__search {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .notfound__search .input {
+    flex: 1;
+    border-radius: 999px;
+    padding-inline: 1.25rem;
+  }
+
+  @media (max-width: 34rem) {
+    .notfound__search {
+      flex-direction: column;
+    }
+  }
+</style>

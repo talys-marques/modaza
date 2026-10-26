@@ -1,0 +1,75 @@
+---
+import Icon from './Icon.astro';
+import { FAQ } from '../data/conteudo.mjs';
+---
+
+<div class="faq">
+  {
+    FAQ.map((f) => (
+      <details class="faq__item">
+        <summary>
+          {f.pergunta}
+          <span class="faq__icon">
+            <Icon name="chevron-down" />
+          </span>
+        </summary>
+        <p>{f.resposta}</p>
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+
+  .faq__item {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .faq__item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.35rem 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .faq__item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    transition: background 0.2s var(--ease), transform 0.25s var(--ease);
+  }
+
+  .faq__icon svg {
+    width: 1rem;
+  }
+
+  .faq__item[open] .faq__icon {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+    transform: rotate(180deg);
+  }
+
+  .faq__item p {
+    max-width: 62ch;
+    padding: 0 3.5rem 1.5rem 0;
+    color: var(--ink-2);
+  }
+</style>

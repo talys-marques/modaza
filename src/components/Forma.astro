@@ -1,0 +1,31 @@
+---
+// Shape that identifies each product line (manual, "Grafismos > Formas").
+// Filled with the line color by default; pass color="currentColor" to follow the text.
+interface Props {
+  pilar: string;
+  class?: string;
+  color?: string;
+}
+
+const shapes: Record<string, { viewBox: string; d: string; color: string }> = {
+  construir: { viewBox: '0 0 210.26 210.12', d: 'M210.26 104.99V210.12H0V104.95L105.21 0Z', color: 'var(--construir)' },
+  decorar: { viewBox: '0 0 208.26 208.26', d: 'M4.2 0H0v208.26h208.26v-4.2C208.26 91.54 116.72 0 4.2 0', color: 'var(--decorar)' },
+  iluminar: { viewBox: '0 0 217.58 217.58', d: 'M217.58 108.79a108.79 108.79 0 1 1-217.58 0a108.79 108.79 0 1 1 217.58 0', color: 'var(--iluminar)' },
+  proteger: {
+    viewBox: '0 0 208.26 208.26',
+    d: 'M106.23 0h-4.2C74.77 0 49.15 10.61 29.88 29.89 10.61 49.15 0 74.77 0 102.03v106.23h208.26V102.03C208.26 45.77 162.49 0 106.23 0',
+    color: 'var(--proteger)',
+  },
+};
+
+const { pilar, class: className, color, ...rest } = Astro.props;
+const shape = shapes[pilar];
+---
+
+{
+  shape && (
+    <svg {...rest} class={className} viewBox={shape.viewBox} aria-hidden="true" focusable="false">
+      <path fill={color ?? shape.color} d={shape.d} />
+    </svg>
+  )
+}

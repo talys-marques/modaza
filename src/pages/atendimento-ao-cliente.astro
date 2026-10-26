@@ -1,0 +1,240 @@
+---
+import { url } from '../lib/url.mjs';
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Faq from '../components/Faq.astro';
+import Icon from '../components/Icon.astro';
+import { breadcrumbLd, faqLd } from '../lib/seo.mjs';
+import { GARANTIA } from '../data/conteudo.mjs';
+import { SITE } from '../config.mjs';
+
+const breadcrumbs = [
+  { label: 'Início', href: url('/') },
+  { label: 'Atendimento ao cliente', href: url('/atendimento-ao-cliente/') },
+];
+---
+
+<Base
+  title="Atendimento ao cliente"
+  description="Fale com a Modaza por WhatsApp, e-mail ou formulário. Garantia, assistência técnica e dúvidas sobre produtos."
+  jsonLd={[breadcrumbLd(breadcrumbs), faqLd()]}
+>
+  <section class="page-head">
+    <div class="container page-head__inner">
+      <Breadcrumbs items={breadcrumbs} />
+      <h1>Atendimento ao cliente</h1>
+      <p class="lead">Dúvidas, sugestões, reclamações ou garantia: fale com a gente pelo canal que preferir.</p>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container support">
+      <div class="channels">
+        <a class="channel" href={`https://wa.me/${SITE.whatsapp.numero}`} target="_blank" rel="noopener" data-pilar="proteger">
+          <span class="channel__icon"><Icon name="whatsapp" /></span>
+          <span>
+            <strong>WhatsApp</strong>
+            {SITE.whatsapp.exibicao}
+          </span>
+          <Icon name="arrow-up-right" class="channel__go" />
+        </a>
+        <a class="channel" href={`mailto:${SITE.email}`} data-pilar="decorar">
+          <span class="channel__icon"><Icon name="mail" /></span>
+          <span>
+            <strong>E-mail</strong>
+            {SITE.email}
+          </span>
+          <Icon name="arrow-up-right" class="channel__go" />
+        </a>
+        <a class="channel" href="#garantia" data-pilar="construir">
+          <span class="channel__icon"><Icon name="shield" /></span>
+          <span>
+            <strong>Garantia</strong>
+            Prazos e certificados
+          </span>
+          <Icon name="arrow-right" class="channel__go" />
+        </a>
+      </div>
+
+      <div class="form-card" id="formulario">
+        <h2>Envie uma mensagem</h2>
+        <p class="muted">Respondemos pelo e-mail informado.</p>
+        <ContactForm />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--white" id="garantia">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-head__text">
+          <span class="eyebrow">Garantia</span>
+          <h2>Garantia contra defeitos de fabricação</h2>
+          <p>
+            O prazo de cada produto aparece na página dele e no verso da embalagem. Para acionar a garantia, leve o produto à loja onde
+            comprou, com a nota fiscal, um documento do titular da compra e um vídeo mostrando o defeito.
+          </p>
+        </div>
+      </div>
+      <div class="warranty">
+        {
+          GARANTIA.map((g) => (
+            <article class="warranty__item">
+              <h3>{g.linha}</h3>
+              <p class="warranty__products">{g.produtos}</p>
+              <p>{g.texto}</p>
+              {g.certificado && (
+                <a class="link-arrow" href={g.certificado.url} target="_blank" rel="noopener">
+                  <Icon name="file-text" />
+                  {g.certificado.titulo}
+                </a>
+              )}
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="container faq-wrap">
+      <div class="section-head__text">
+        <span class="eyebrow">Perguntas frequentes</span>
+        <h2>Antes de escrever, veja se a resposta está aqui</h2>
+      </div>
+      <Faq />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .support {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(1.5rem, 1rem + 3vw, 4rem);
+    align-items: start;
+  }
+
+  .channels {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .channel {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+
+  .channel:hover {
+    border-color: var(--line);
+    box-shadow: var(--shadow);
+  }
+
+  .channel > span:nth-child(2) {
+    display: grid;
+    flex: 1;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    overflow-wrap: anywhere;
+  }
+
+  .channel strong {
+    color: var(--ink);
+  }
+
+  .channel__icon {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    flex: none;
+    border-radius: 50%;
+    background: var(--pilar);
+  }
+
+  .channel__icon svg {
+    width: 1.35rem;
+    color: var(--pilar-on);
+  }
+
+  .channel :global(.channel__go) {
+    width: 1.1rem;
+    color: var(--ink-3);
+  }
+
+  .form-card {
+    display: grid;
+    gap: 0.5rem;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: calc(var(--radius) * 1.5);
+  }
+
+  .form-card h2 {
+    font-size: var(--step-2);
+  }
+
+  .form-card > .muted {
+    margin-bottom: 1rem;
+  }
+
+  .warranty {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 1rem;
+  }
+
+  .warranty__item {
+    display: grid;
+    align-content: start;
+    gap: 0.85rem;
+    padding: 1.75rem;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    background: var(--bg);
+  }
+
+  .warranty__item h3 {
+    font-size: 1.25rem;
+  }
+
+  .warranty__products {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent-ink);
+  }
+
+  .warranty__item p:not(.warranty__products) {
+    color: var(--ink-2);
+  }
+
+  .warranty__item .link-arrow {
+    justify-self: start;
+    margin-top: 0.5rem;
+  }
+
+  .faq-wrap {
+    display: grid;
+    gap: 2rem;
+    max-width: 56rem;
+  }
+
+  .faq-wrap h2 {
+    font-size: var(--step-3);
+  }
+
+  @media (max-width: 56rem) {
+    .support {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

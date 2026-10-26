@@ -1,0 +1,506 @@
+---
+import { url } from '../lib/url.mjs';
+import Icon from './Icon.astro';
+import Marca from './Marca.astro';
+import Forma from './Forma.astro';
+import { catalogo } from '../lib/catalogo.mjs';
+
+const { pilares } = catalogo();
+const path = Astro.url.pathname;
+const inProducts = path.startsWith(url('/produtos')) || path.startsWith(url('/categoria-produto'));
+const links = [
+  { href: url('/catalogos/'), label: 'Catálogos' },
+  { href: url('/#ondeencontrar'), label: 'Onde encontrar' },
+  { href: url('/atendimento-ao-cliente/'), label: 'Atendimento' },
+];
+---
+
+<header class="header" data-header>
+  <div class="container header__bar">
+    <a href={url('/')} class="header__logo" aria-label="Modaza — página inicial">
+      <Marca name="logo" class="header__logo-svg" decorative />
+    </a>
+
+    <nav class="nav" aria-label="Principal">
+      <ul class="nav__list">
+        <li class="nav__item nav__item--mega" data-mega>
+          <a href={url('/produtos/')} class="nav__link" aria-current={inProducts ? 'page' : undefined}>Produtos</a>
+          <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="mega-produtos" data-mega-toggle>
+            <Icon name="chevron-down" />
+            <span class="sr-only">Abrir categorias de produtos</span>
+          </button>
+          <div class="mega" id="mega-produtos">
+            <div class="container mega__inner">
+              {
+                pilares.map((pilar) => (
+                  <div class="mega__col" data-pilar={pilar.slug}>
+                    <a href={pilar.url} class="mega__title">
+                      <Forma pilar={pilar.slug} class="mega__shape" />
+                      {pilar.nome}
+                      <span>{pilar.produtos.length}</span>
+                    </a>
+                    <ul>
+                      {pilar.subcategorias.map((s) => (
+                        <li>
+                          <a href={s.url}>{s.nome}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              }
+              <a href={url('/produtos/')} class="mega__all">
+                Ver todos os produtos
+                <Icon name="arrow-right" />
+              </a>
+            </div>
+          </div>
+        </li>
+        {
+          links.map((l) => (
+            <li class="nav__item">
+              <a href={l.href} class="nav__link" aria-current={path === l.href ? 'page' : undefined}>
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <button class="icon-btn" type="button" aria-expanded="false" aria-controls="busca-global" data-search-toggle>
+        <Icon name="search" />
+        <span class="sr-only">Buscar produtos</span>
+      </button>
+      <button class="icon-btn header__menu" type="button" aria-expanded="false" aria-controls="menu-mobile" data-menu-toggle>
+        <Icon name="menu" class="icon-open" />
+        <Icon name="x" class="icon-close" />
+        <span class="sr-only">Menu</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="search-bar" id="busca-global" hidden data-search>
+    <form class="container search-bar__form" action={url('/produtos/')} method="get" role="search">
+      <Icon name="search" />
+      <label for="busca-global-input" class="sr-only">Buscar produtos</label>
+      <input id="busca-global-input" name="busca" type="search" placeholder="Buscar por nome, linha ou código (SKU)" autocomplete="off" />
+      <button class="btn" type="submit">Buscar</button>
+    </form>
+  </div>
+
+  <div class="mobile-menu" id="menu-mobile" hidden data-menu>
+    <nav class="container" aria-label="Menu móvel">
+      <a href={url('/produtos/')} class="mobile-menu__main">Todos os produtos</a>
+      {
+        pilares.map((pilar) => (
+          <details class="mobile-menu__group">
+            <summary>
+              <span class="mobile-menu__pilar">
+                <Forma pilar={pilar.slug} class="mobile-menu__shape" />
+                {pilar.nome}
+              </span>
+              <Icon name="chevron-down" />
+            </summary>
+            <ul>
+              <li>
+                <a href={pilar.url}>Tudo em {pilar.nome}</a>
+              </li>
+              {pilar.subcategorias.map((s) => (
+                <li>
+                  <a href={s.url}>{s.nome}</a>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ))
+      }
+      {
+        links.map((l) => (
+          <a href={l.href} class="mobile-menu__main">
+            {l.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgb(244 242 239 / 0.94);
+    backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .header__bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    height: var(--header-h);
+  }
+
+  /* Manual: never below 75px wide on screens */
+  .header__logo {
+    color: var(--carbono);
+  }
+
+  .header__logo-svg {
+    width: 128px;
+    height: auto;
+  }
+
+  .nav {
+    margin-left: auto;
+  }
+
+  .nav__list {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav__item {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav__link {
+    position: relative;
+    padding: 0.6rem 0.85rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--ink-2);
+    transition: color 0.2s var(--ease);
+  }
+
+  .nav__link:hover,
+  .nav__link[aria-current='page'] {
+    color: var(--ink);
+  }
+
+  .nav__link[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    left: 0.85rem;
+    right: 0.85rem;
+    bottom: 0.2rem;
+    height: 2px;
+    background: var(--carbono);
+  }
+
+  .nav__item--mega .nav__link {
+    padding-right: 0.15rem;
+  }
+
+  .nav__toggle {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+
+  .nav__toggle svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 0.2s var(--ease);
+  }
+
+  .mega {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 24px 40px -24px rgb(51 51 51 / 0.25);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), visibility 0.2s;
+  }
+
+  .nav__item--mega:hover .mega,
+  .nav__item--mega:focus-within .mega,
+  .nav__item--mega[data-open] .mega {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .nav__item--mega:hover .nav__toggle svg,
+  .nav__item--mega[data-open] .nav__toggle svg {
+    transform: rotate(180deg);
+  }
+
+  .mega__inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)) auto;
+    gap: 2rem;
+    padding-block: 2rem 2.25rem;
+  }
+
+  .mega__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .mega__shape {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  .mega__title span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-3);
+  }
+
+  .mega ul {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mega ul a {
+    color: var(--ink-2);
+    text-decoration: none;
+    font-size: 0.9375rem;
+  }
+
+  .mega ul a:hover,
+  .mega__title:hover {
+    color: var(--pilar-ink);
+  }
+
+  .mega__all {
+    align-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.1rem;
+    border-radius: 999px;
+    background: var(--bg);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .mega__all svg {
+    width: 1rem;
+  }
+
+  .header__actions {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .icon-btn {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    transition: background 0.2s var(--ease);
+  }
+
+  .icon-btn:hover {
+    background: var(--bg-deep);
+  }
+
+  .icon-btn svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+
+  .header__menu {
+    display: none;
+  }
+
+  .header__menu .icon-close,
+  .header__menu[aria-expanded='true'] .icon-open {
+    display: none;
+  }
+
+  .header__menu[aria-expanded='true'] .icon-close {
+    display: block;
+  }
+
+  .search-bar {
+    border-top: 1px solid var(--line-soft);
+    background: var(--surface);
+  }
+
+  .search-bar__form {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-block: 0.85rem;
+  }
+
+  .search-bar__form > svg {
+    width: 1.25rem;
+    color: var(--ink-3);
+    flex: none;
+  }
+
+  .search-bar input {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.75rem;
+    border: 0;
+    background: none;
+    font-size: 1.0625rem;
+  }
+
+  .search-bar input:focus {
+    outline: none;
+  }
+
+  .mobile-menu {
+    max-height: calc(100dvh - var(--header-h));
+    overflow-y: auto;
+    border-top: 1px solid var(--line-soft);
+    background: var(--bg);
+    padding-bottom: 1.5rem;
+  }
+
+  .mobile-menu nav {
+    display: grid;
+  }
+
+  .mobile-menu__main,
+  .mobile-menu summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .mobile-menu__pilar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .mobile-menu summary .mobile-menu__shape {
+    width: 0.9rem;
+    transition: none;
+  }
+
+  .mobile-menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-menu summary svg {
+    width: 1.1rem;
+    transition: transform 0.2s var(--ease);
+  }
+
+  .mobile-menu details[open] summary > svg {
+    transform: rotate(180deg);
+  }
+
+  .mobile-menu ul {
+    display: grid;
+    gap: 0.1rem;
+    margin: 0;
+    padding: 0.5rem 0 1rem;
+    list-style: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mobile-menu ul a {
+    display: block;
+    padding: 0.5rem 0;
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+
+  @media (max-width: 60rem) {
+    .nav {
+      display: none;
+    }
+
+    .header__actions {
+      margin-left: auto;
+    }
+
+    .header__menu {
+      display: grid;
+    }
+
+    .header__bar {
+      gap: 1rem;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]')!;
+
+  function bindToggle(button: HTMLButtonElement | null, panel: HTMLElement | null, onOpen?: () => void) {
+    if (!button || !panel) return;
+    button.addEventListener('click', () => {
+      const open = button.getAttribute('aria-expanded') !== 'true';
+      button.setAttribute('aria-expanded', String(open));
+      panel.hidden = !open;
+      if (open) onOpen?.();
+    });
+  }
+
+  bindToggle(header.querySelector('[data-search-toggle]'), header.querySelector('[data-search]'), () =>
+    header.querySelector<HTMLInputElement>('#busca-global-input')?.focus()
+  );
+  bindToggle(header.querySelector('[data-menu-toggle]'), header.querySelector('[data-menu]'));
+
+  // Mega menu: hover opens it with CSS; the chevron button makes it reachable by keyboard and touch
+  const mega = header.querySelector<HTMLElement>('[data-mega]');
+  const megaToggle = header.querySelector<HTMLButtonElement>('[data-mega-toggle]');
+  megaToggle?.addEventListener('click', () => {
+    const open = !mega?.hasAttribute('data-open');
+    mega?.toggleAttribute('data-open', open);
+    megaToggle.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    mega?.removeAttribute('data-open');
+    megaToggle?.setAttribute('aria-expanded', 'false');
+  });
+  document.addEventListener('click', (e) => {
+    if (mega && !mega.contains(e.target as Node)) {
+      mega.removeAttribute('data-open');
+      megaToggle?.setAttribute('aria-expanded', 'false');
+    }
+  });
+</script>

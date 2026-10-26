@@ -1,0 +1,198 @@
+---
+import { url } from '../lib/url.mjs';
+import Icon from './Icon.astro';
+import Marca from './Marca.astro';
+import { catalogo } from '../lib/catalogo.mjs';
+import { SITE } from '../config.mjs';
+
+const { pilares } = catalogo();
+const whatsapp = `https://wa.me/${SITE.whatsapp.numero}`;
+---
+
+<footer class="footer">
+  <div class="footer__band" aria-hidden="true">
+    <span data-pilar="construir"></span>
+    <span data-pilar="decorar"></span>
+    <span data-pilar="iluminar"></span>
+    <span data-pilar="proteger"></span>
+  </div>
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <div class="footer__logo">
+        <Marca name="logo" class="footer__logo-svg" />
+        <span>Faz parte da sua vida</span>
+      </div>
+      <p>Produtos para construir, decorar e iluminar ambientes com design, qualidade e acabamento superior.</p>
+      <div class="footer__contact">
+        <a href={whatsapp} target="_blank" rel="noopener"><Icon name="whatsapp" /> {SITE.whatsapp.exibicao}</a>
+        <a href={`mailto:${SITE.email}`}><Icon name="mail" /> {SITE.email}</a>
+      </div>
+    </div>
+
+    <nav class="footer__col" aria-label="Produtos">
+      <h2>Produtos</h2>
+      <ul>
+        {
+          pilares.map((p) => (
+            <li>
+              <a href={p.url}>{p.nome}</a>
+            </li>
+          ))
+        }
+        <li><a href={url('/produtos/')}>Todos os produtos</a></li>
+        <li><a href={url('/catalogos/')}>Catálogos</a></li>
+      </ul>
+    </nav>
+
+    <nav class="footer__col" aria-label="Institucional">
+      <h2>Modaza</h2>
+      <ul>
+        <li><a href={url('/#quemsomos')}>Quem somos</a></li>
+        <li><a href={url('/#ondeencontrar')}>Onde encontrar</a></li>
+        <li><a href={url('/#faq')}>Perguntas frequentes</a></li>
+      </ul>
+    </nav>
+
+    <nav class="footer__col" aria-label="Atendimento">
+      <h2>Atendimento</h2>
+      <ul>
+        <li><a href={url('/atendimento-ao-cliente/')}>Fale conosco</a></li>
+        <li><a href={url('/atendimento-ao-cliente/#garantia')}>Garantia</a></li>
+        <li><a href={url('/atendimento-ao-cliente/#formulario')}>Assistência técnica</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="container footer__legal">
+    <p>{SITE.empresa}</p>
+    <p>{SITE.endereco}</p>
+    <p>© {new Date().getFullYear()} Modaza. Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--dark);
+    color: #cfccc6;
+  }
+
+  /* The four line patterns side by side, as in the brand applications */
+  .footer__band {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: clamp(1.75rem, 1rem + 2vw, 3rem);
+  }
+
+  .footer__band span {
+    background: var(--pilar) var(--estampa) 0 0 / auto 200% repeat;
+  }
+
+  .footer__grid {
+    padding-top: clamp(3rem, 2rem + 4vw, 5rem);
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: 2.5rem;
+    padding-bottom: 3rem;
+  }
+
+  .footer__brand {
+    display: grid;
+    gap: 1.25rem;
+    align-content: start;
+    max-width: 24rem;
+  }
+
+  /* Institutional tagline: Regular weight, centered below the logo */
+  .footer__logo {
+    display: inline-grid;
+    justify-items: center;
+    gap: 0.55rem;
+    justify-self: start;
+    color: var(--creme);
+  }
+
+  .footer__logo-svg {
+    width: 150px;
+    height: auto;
+  }
+
+  .footer__logo span {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .footer__contact {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .footer__contact a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--creme);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .footer__contact svg {
+    width: 1.15rem;
+    color: var(--iluminar);
+  }
+
+  .footer__col h2 {
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #a3a09a;
+  }
+
+  .footer__col ul {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .footer__col a {
+    color: #e8e6e2;
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+
+  .footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid rgb(244 242 239 / 0.1);
+    font-size: 0.8125rem;
+    color: #a3a09a;
+  }
+
+  .footer__legal p:last-child {
+    margin-left: auto;
+  }
+
+  @media (max-width: 56rem) {
+    .footer__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .footer__brand {
+      grid-column: 1 / -1;
+    }
+
+    .footer__legal p:last-child {
+      margin-left: 0;
+    }
+  }
+</style>

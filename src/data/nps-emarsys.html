@@ -1,0 +1,779 @@
+
+<style>
+:root{
+--coral: #F2896B;
+--coral-dark: #E06F4E;
+--dark: #333335;
+--gray-bg: #F4F3EF;
+--text-dark: #1B2733;
+--line: #D9DEE3;
+}
+*{ box-sizing: border-box; }
+#npsModazaWidget{
+margin: 0;
+padding: 0;
+background: var(--gray-bg);
+font-family: 'Segoe UI', Roboto, Arial, Helvetica, sans-serif;
+color: var(--text-dark) !important;
+width: 100%;
+max-width: 100%;
+overflow-x: hidden;
+}
+/* Blindagem contra CSS de tema/página-construtora (Elementor, WordPress etc.):
+garante que os textos do widget não herdem cor de fora, deixando-os ilegíveis. */
+#npsModazaWidget p,
+#npsModazaWidget span,
+#npsModazaWidget label,
+#npsModazaWidget h3,
+#npsModazaWidget textarea,
+#npsModazaWidget input{
+color: var(--text-dark) !important;
+}
+#npsModazaWidget img{
+height: auto;
+}
+a{ color: inherit; }
+.nps-modaza-hidden{ display: none !important; }
+/* ===================== ESTADOS DE PÁGINA (loading / acesso negado) ===================== */
+.nps-modaza-state{
+min-height: 60vh;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+text-align: center;
+padding: 40px 24px;
+max-width: 560px;
+margin: 0 auto;
+}
+.nps-modaza-state h3{
+margin: 0 0 10px;
+font-size: 20px;
+}
+.nps-modaza-state p{
+margin: 0;
+font-size: 15px;
+line-height: 1.5;
+color: var(--text-dark);
+}
+.nps-modaza-loading h3{ color: var(--coral); }
+.nps-modaza-access-denied-box{
+background-color: #FCEAEC;
+border: 1.5px solid #E4A0A8;
+border-radius: 10px;
+padding: 26px 32px;
+max-width: 560px;
+margin: 0 auto;
+text-align: center;
+}
+.nps-modaza-access-denied-title{
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+margin: 0 0 12px;
+}
+.nps-modaza-access-denied-title svg{
+width: 20px;
+height: 20px;
+flex: 0 0 auto;
+}
+.nps-modaza-access-denied-title span{
+color: #9E1B2E;
+font-size: 18px;
+font-weight: 700;
+}
+.nps-modaza-access-denied-box p{
+margin: 0;
+color: #6E2430;
+font-size: 14px;
+line-height: 1.55;
+}
+.nps-modaza-auto-submitted{
+background-color: #E8F5E8;
+border: 2px solid #4CAF50;
+border-radius: 10px;
+padding: 20px 22px;
+margin: 0 0 8px;
+text-align: center;
+}
+.nps-modaza-auto-submitted p{ margin: 0; color: #2E7D32; font-size: 15px; line-height: 1.5; }
+.nps-modaza-auto-submitted-sub{ margin-top: 8px !important; font-size: 13.5px !important; color: #3d6b40 !important; }
+.nps-modaza-score-badge{
+display: inline-flex;
+align-items: center;
+justify-content: center;
+min-width: 28px;
+height: 28px;
+padding: 0 6px;
+border-radius: 50%;
+background: #2E8B3D;
+color: #fff;
+font-weight: 700;
+font-size: 14px;
+vertical-align: middle;
+margin: 0 2px;
+}
+.nps-modaza-final-thankyou{
+background-color: #E8F5E8;
+border: 2px solid #4CAF50;
+border-radius: 10px;
+padding: 18px 20px;
+margin: 10px 0 0;
+text-align: center;
+}
+.nps-modaza-final-thankyou p{ margin: 0; color: #2E7D32; font-size: 15px; line-height: 1.5; }
+/* ===================== HERO / DARK SECTION ===================== */
+.nps-modaza-hero-wrap{
+position: relative;
+}
+.nps-modaza-hero{
+position: relative;
+width: 100%;
+background: var(--dark);
+overflow: hidden;
+}
+.nps-modaza-hero-inner{
+position: relative;
+width: 100%;
+margin: 0 auto;
+padding: 40px 40px;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+#npsModazaWidget .nps-modaza-hero-banner{
+display: block !important;
+width: 100% !important;
+max-width: 420px !important;
+height: auto !important;
+margin: 0 auto !important;
+}
+/* ===================== FORM / GRAY SECTION ===================== */
+.nps-modaza-content-wrap{
+width: 100%;
+margin: 0 auto;
+padding: 44px 40px 64px;
+}
+form.nps-modaza-survey{
+max-width: 720px;
+margin: 0 auto;
+}
+.nps-modaza-question-block{
+padding: 30px 0;
+border-bottom: 1px solid var(--line);
+}
+.nps-modaza-question-block:first-child{
+padding-top: 4px;
+}
+.nps-modaza-question-block:last-of-type{
+border-bottom: none;
+}
+.nps-modaza-question-title{
+font-size: 17px;
+font-weight: 700;
+color: var(--text-dark);
+margin: 0 0 20px;
+line-height: 1.4;
+}
+/* --- Emoji rating rows --- */
+.nps-modaza-emoji-row{
+display: flex;
+gap: 22px;
+flex-wrap: nowrap;
+}
+.nps-modaza-emoji-item{
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 10px;
+flex: 1 1 0;
+min-width: 0;
+}
+.nps-modaza-emoji-circle{
+width: 58px;
+height: 58px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: transform .15s ease;
+}
+.nps-modaza-emoji-circle svg{ width: 60%; height: 60%; }
+.nps-modaza-emoji-label{
+display: flex;
+align-items: center;
+gap: 6px;
+font-size: 13px;
+color: var(--text-dark);
+cursor: pointer;
+white-space: nowrap;
+}
+.nps-modaza-emoji-label input{
+width: 15px;
+height: 15px;
+accent-color: var(--coral);
+cursor: pointer;
+margin: 0;
+flex: 0 0 auto;
+}
+.nps-modaza-emoji-item input:checked ~ .nps-modaza-emoji-circle,
+.nps-modaza-emoji-item label:has(input:checked) .nps-modaza-emoji-circle{
+transform: scale(1.1);
+}
+/* --- Thumbs Sim/Não --- */
+.nps-modaza-thumb-row{
+display: flex;
+gap: 40px;
+}
+.nps-modaza-thumb-item{
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 10px;
+}
+.nps-modaza-thumb-circle{
+width: 58px;
+height: 58px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: transform .15s ease;
+}
+.nps-modaza-thumb-circle svg{ width: 50%; height: 50%; }
+.nps-modaza-thumb-item input:checked ~ .nps-modaza-thumb-circle{ transform: scale(1.1); }
+.nps-modaza-thumb-label{
+display: flex;
+align-items: center;
+gap: 6px;
+font-size: 13px;
+cursor: pointer;
+}
+.nps-modaza-thumb-label input{
+width: 15px;
+height: 15px;
+accent-color: var(--coral);
+margin: 0;
+}
+/* --- Lista de opções (radio) --- */
+.nps-modaza-radio-list{
+display: flex;
+flex-direction: column;
+gap: 14px;
+}
+.nps-modaza-radio-option{
+display: flex;
+align-items: center;
+gap: 12px;
+font-size: 15px;
+line-height: 1.4;
+color: var(--text-dark);
+cursor: pointer;
+}
+.nps-modaza-radio-option input{
+width: 18px;
+height: 18px;
+accent-color: var(--coral);
+cursor: pointer;
+margin: 0;
+flex: 0 0 auto;
+}
+/* --- Textarea --- */
+textarea.nps-modaza-textarea{
+width: 100%;
+min-height: 150px;
+border: 1px solid var(--line);
+border-radius: 8px;
+background: #fff;
+padding: 14px 16px;
+font-family: inherit;
+font-size: 14px;
+color: var(--text-dark);
+resize: vertical;
+}
+textarea.nps-modaza-textarea:focus{
+outline: none;
+border-color: var(--coral);
+}
+/* --- Submit --- */
+.nps-modaza-submit-row{
+padding-top: 34px;
+padding-bottom: 40px;
+display: flex;
+justify-content: center;
+}
+#npsModazaWidget button.nps-modaza-submit-btn{
+background: var(--coral) !important;
+color: #fff !important;
+border: none;
+border-radius: 8px;
+font-size: 16px;
+font-weight: 700;
+padding: 15px 56px;
+cursor: pointer;
+transition: background .15s ease;
+width: 100%;
+max-width: 320px;
+}
+#npsModazaWidget button.nps-modaza-submit-btn:hover{
+background: var(--coral-dark) !important;
+}
+button.nps-modaza-submit-btn:disabled{
+cursor: not-allowed;
+opacity: .8;
+}
+button.nps-modaza-submit-btn.sending{ background: #d4a853; }
+button.nps-modaza-submit-btn.sent{ background: #4CAF50; }
+/* ===================== RESPONSIVE ===================== */
+/* --- Lista de checkboxes (características) --- */
+.nps-modaza-checkbox-list{
+display: flex;
+flex-direction: column;
+gap: 14px;
+}
+.nps-modaza-checkbox-option{
+display: flex;
+align-items: center;
+gap: 12px;
+font-size: 15px;
+line-height: 1.4;
+color: var(--text-dark);
+cursor: pointer;
+}
+.nps-modaza-checkbox-option input{
+width: 18px;
+height: 18px;
+accent-color: var(--coral);
+cursor: pointer;
+margin: 0;
+flex: 0 0 auto;
+}
+.nps-modaza-question-hint{
+margin: -12px 0 18px;
+font-size: 13px;
+color: #6B7684;
+}
+@media (max-width: 720px){
+.nps-modaza-hero-inner{
+padding: 28px 24px;
+}
+#npsModazaWidget .nps-modaza-hero-banner{ max-width: 260px !important; }
+.nps-modaza-content-wrap{ padding: 32px 20px 48px; }
+.nps-modaza-emoji-row{ gap: 6px; flex-wrap: nowrap; justify-content: space-between; }
+.nps-modaza-emoji-item{ flex: 1 1 0; min-width: 0; }
+.nps-modaza-emoji-circle{ width: 36px; height: 36px; }
+.nps-modaza-emoji-label{ font-size: 9px; flex-direction: column; gap: 3px; white-space: normal; text-align: center; }
+.nps-modaza-thumb-row{ gap: 24px; justify-content: flex-start; width: 100%; }
+}
+</style>
+<div id="npsModazaWidget">
+<!-- Carregando (checagem instantânea do tageamento) -->
+<div id="npsModazaLoading" class="nps-modaza-state nps-modaza-loading">
+<h3>⏳ Carregando sua avaliação...</h3>
+<p>Estamos processando os seus dados.</p>
+</div>
+<!-- Acesso negado: exibido quando a página é aberta sem o tageamento #nps -->
+<div id="npsModazaAccessDenied" class="nps-modaza-state nps-modaza-access-denied nps-modaza-hidden">
+<div class="nps-modaza-access-denied-box">
+<p class="nps-modaza-access-denied-title">
+<svg viewBox="0 0 24 24" fill="none"><path d="M5 5l14 14M19 5L5 19" stroke="#9E1B2E" stroke-width="3" stroke-linecap="round"/></svg>
+<span>Acesso Negado</span>
+</p>
+<p>Esta página só pode ser acessada através de um link personalizado encaminhado por e-mail.</p>
+</div>
+</div>
+<!-- Página completa: só é exibida quando o acesso via tageamento é validado -->
+<div id="npsModazaPage" class="nps-modaza-hidden">
+<div class="nps-modaza-hero-wrap">
+<div class="nps-modaza-hero">
+<div class="nps-modaza-hero-inner">
+<img decoding="async" class="nps-modaza-hero-banner" src="https://link.taqi.com.br/custloads/1091684449/md_311199.png" alt="Modaza" style="display:block !important; width:100% !important; max-width:420px !important; height:auto !important; margin:0 auto !important;">
+</div>
+</div>
+</div>
+<div class="nps-modaza-content-wrap">
+<!-- Confirmação: nome/sobrenome/e-mail/cpf/nota já foram enviados via tageamento -->
+<div id="npsModazaAutoSubmitted" class="nps-modaza-auto-submitted nps-modaza-hidden">
+<p>
+✅ Obrigado pela sua avaliação! Recebemos a nota
+<span id="npsModazaScoreBadge" class="nps-modaza-score-badge">–</span>
+que você deu para a Modaza.
+</p>
+<p class="nps-modaza-auto-submitted-sub">Se puder, responda também as perguntas abaixo — isso nos ajuda a melhorar ainda mais a sua experiência.</p>
+</div>
+<form name="ProfileForm" action="https://link.taqi.com.br/u/register.php" method="get"
+onsubmit="return handleFormSubmit(event)" id="mainForm" class="nps-modaza-survey">
+<!-- Campos ocultos Emarsys (sistema) -->
+<input type="hidden" name="CID" value="1091684449">
+<input type="hidden" name="SID" value="">
+<input type="hidden" name="UID" value="">
+<input type="hidden" name="f" value="1499">
+<input type="hidden" name="p" value="2">
+<input type="hidden" name="a" value="r">
+<input type="hidden" name="el" value="" id="emailField">
+<input type="hidden" name="llid" value="">
+<input type="hidden" name="c" value="">
+<input type="hidden" name="counted" value="">
+<input type="hidden" name="RID" value="">
+<input type="hidden" name="mailnow" value="">
+<!-- Campos ocultos preenchidos via tageamento do link enviado por e-mail -->
+<input type="hidden" name="inp_1" value="" id="inp_1">          <!-- nome -->
+<input type="hidden" name="inp_2" value="" id="inp_2">          <!-- sobrenome -->
+<input type="hidden" name="inp_3" value="" id="inp_3">          <!-- e-mail -->
+<input type="hidden" name="inp_12939" value="" id="inp_12939">  <!-- cpf -->
+<input type="hidden" name="inp_17594" value="" id="inp_17594">  <!-- pergunta 1: nota 0-10 (NPS) -->
+<!-- Campos ocultos sincronizados a partir das perguntas visíveis de escala -->
+<input type="hidden" name="inp_17596" value="" id="inp_17596">  <!-- pergunta 3: facilidade de instalação -->
+<input type="hidden" name="inp_17611" value="" id="inp_17611">  <!-- pergunta 4: características mais valorizadas -->
+<input type="hidden" name="inp_17598" value="" id="inp_17598">  <!-- pergunta 5: avaliação da entrega -->
+<!-- Pergunta 2: Recomendaria -->
+<div class="nps-modaza-question-block">
+<p class="nps-modaza-question-title">Você recomendaria a Modaza para um amigo, familiar ou colega de profissão?</p>
+<div class="nps-modaza-thumb-row">
+<div class="nps-modaza-thumb-item">
+<label class="nps-modaza-thumb-circle" style="background:#2E8B3D;">
+<input type="radio" name="inp_17595" value="Sim" class="nps-modaza-exp-hidden-radio" data-pair="sim" style="display:none;">
+<svg viewBox="0 0 24 24" fill="none"><path d="M7 22V11M2 13v7a2 2 0 0 0 2 2h12.6a2 2 0 0 0 2-1.7l1.3-8A2 2 0 0 0 18 10h-5V5a2 2 0 0 0-2-2L9 11" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</label>
+<label class="nps-modaza-thumb-label"><input type="radio" name="recomenda_radio" value="Sim" class="nps-modaza-exp-visible-radio" data-pair="sim"><span>Sim</span></label>
+</div>
+<div class="nps-modaza-thumb-item">
+<label class="nps-modaza-thumb-circle" style="background:#D64545;">
+<input type="radio" name="inp_17595" value="Não" class="nps-modaza-exp-hidden-radio" data-pair="nao" style="display:none;">
+<svg viewBox="0 0 24 24" fill="none"><path d="M17 2v11M22 11V4a2 2 0 0 0-2-2H7.4a2 2 0 0 0-2 1.7l-1.3 8A2 2 0 0 0 6 14h5v5a2 2 0 0 0 2 2l2-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</label>
+<label class="nps-modaza-thumb-label"><input type="radio" name="recomenda_radio" value="Não" class="nps-modaza-exp-visible-radio" data-pair="nao"><span>Não</span></label>
+</div>
+</div>
+</div>
+<!-- Pergunta 3: Facilidade de instalação -->
+<div class="nps-modaza-question-block">
+<p class="nps-modaza-question-title">Como você avalia a facilidade de instalação dos produtos Modaza?</p>
+<div class="nps-modaza-emoji-row"
+data-group="facilidade-instalacao"
+data-hidden-field="inp_17596"
+data-labels="Muito fácil,Fácil,Moderado,Difícil,Muito difícil"
+data-values="muito_facil,facil,moderado,dificil,muito_dificil"></div>
+</div>
+<!-- Pergunta 4: Características mais valorizadas -->
+<div class="nps-modaza-question-block">
+<p class="nps-modaza-question-title">Quais características você mais valoriza nos produtos Modaza?</p>
+<div class="nps-modaza-checkbox-list" data-hidden-field="inp_17611">
+<label class="nps-modaza-checkbox-option"><input type="checkbox" class="nps-modaza-checkbox-input" value="qualidade_materiais"><span>Qualidade dos materiais</span></label>
+<label class="nps-modaza-checkbox-option"><input type="checkbox" class="nps-modaza-checkbox-input" value="design_estetica"><span>Design e estética</span></label>
+<label class="nps-modaza-checkbox-option"><input type="checkbox" class="nps-modaza-checkbox-input" value="variedade_opcoes"><span>Variedade de opções</span></label>
+<label class="nps-modaza-checkbox-option"><input type="checkbox" class="nps-modaza-checkbox-input" value="custo_beneficio"><span>Custo-benefício</span></label>
+<label class="nps-modaza-checkbox-option"><input type="checkbox" class="nps-modaza-checkbox-input" value="durabilidade"><span>Durabilidade</span></label>
+</div>
+</div>
+<!-- Pergunta 5: Avaliação da entrega -->
+<div class="nps-modaza-question-block">
+<p class="nps-modaza-question-title">Como você avalia a entrega do produto (prazo de entrega e estado físico do produto no momento da entrega)?</p>
+<div class="nps-modaza-emoji-row"
+data-group="avaliacao-entrega"
+data-hidden-field="inp_17598"
+data-labels="Muito bom,Bom,Razoável,Ruim,Muito ruim"
+data-values="muito_bom,bom,razoavel,ruim,muito_ruim"></div>
+</div>
+<!-- Pergunta 6: Opinião / comentário -->
+<div class="nps-modaza-question-block">
+<p class="nps-modaza-question-title">Pensando em sua experiência com o produto, quais foram os aspectos que você mais gostou e/ou menos gostou? Você teria algum elogio, crítica ou sugestão?</p>
+<p class="nps-modaza-question-hint">Resposta opcional.</p>
+<textarea class="nps-modaza-textarea" name="inp_17599" id="inp_17599" placeholder=""></textarea>
+</div>
+<!-- Agradecimento final: exibido acima do botão após o envio, sem esconder o formulário -->
+<div id="npsModazaThankYou" class="nps-modaza-final-thankyou nps-modaza-hidden">
+<p>✅ <b>Obrigado pela sua avaliação!</b> Suas respostas foram registradas com sucesso.</p>
+</div>
+<div class="nps-modaza-submit-row">
+<button type="submit" id="npsModazaSubmitBtn" class="nps-modaza-submit-btn">Enviar</button>
+</div>
+</form>
+</div>
+</div>
+<script>
+(function(){
+// ─── Estado global ─────────────────────────────────────────────────────
+var autoSubmissionCompleted = false;
+// ─── Remove chaves duplas de merge tag não resolvido (ex: "{{Marcos}}")
+//     antes de qualquer valor vindo da URL seguir para a Emarsys ─────────
+function limparValorTageamento(valor){
+if (valor === null || valor === undefined) return valor;
+return String(valor)
+.replace(/^\s*\{{1,2}\s*/, '')   // remove "{{ " ou "{ " do início
+.replace(/\s*\}{1,2}\s*$/, '')   // remove " }}" ou " }" do final
+.trim();
+}
+// ─── Lê parâmetro de ?search OU de #hash?param (já higienizado) ───────
+function getURLParameter(name){
+var searchParams = new URLSearchParams(window.location.search);
+if (searchParams.get(name) !== null) return limparValorTageamento(searchParams.get(name));
+var hash = window.location.hash;
+var qIdx = hash.indexOf('?');
+if (qIdx !== -1){
+var hashParams = new URLSearchParams(hash.substring(qIdx));
+if (hashParams.get(name) !== null) return limparValorTageamento(hashParams.get(name));
+}
+return null;
+}
+// ─── Verifica presença de #nps ou ?nps no link ────────────────────────
+function verificarAcessoNPS(){
+var full = window.location.pathname + window.location.search + window.location.hash;
+return full.indexOf('?nps') !== -1 || full.indexOf('#nps') !== -1;
+}
+// ─── Captura os dados enviados via tageamento na URL ──────────────────
+function capturarDadosURL(){
+return {
+from:      getURLParameter('from'),
+nps:       getURLParameter('nps'),
+email:     getURLParameter('email'),
+cpf:       getURLParameter('cpf'),
+nome:      getURLParameter('nome'),
+sobrenome: getURLParameter('sobrenome')
+};
+}
+// ─── Cor do badge de acordo com a nota (0-10, vermelho→verde) ─────────
+var npsColors = ["#B71C1C","#C62828","#D84315","#E64A19","#EF6C00","#F9A825","#FBC02D","#C0CA33","#8BC34A","#689F38","#33691E"];
+// ─── Exibe a nota recebida via tageamento no badge de confirmação ─────
+function exibirNotaRecebida(nps){
+var badge = document.getElementById('npsModazaScoreBadge');
+if (!badge) return;
+var n = parseInt(nps, 10);
+if (isNaN(n) || n < 0 || n > 10){
+badge.textContent = nps || '–';
+return;
+}
+badge.textContent = n;
+badge.style.background = npsColors[n];
+}
+// ─── Preenche os campos ocultos com os dados capturados na URL ────────
+function preencherCamposURL(dadosUrl){
+if (dadosUrl.nome){
+document.getElementById('inp_1').value = dadosUrl.nome;
+}
+if (dadosUrl.sobrenome){
+document.getElementById('inp_2').value = dadosUrl.sobrenome;
+}
+if (dadosUrl.email){
+document.getElementById('inp_3').value    = dadosUrl.email;
+document.getElementById('emailField').value = dadosUrl.email;
+}
+if (dadosUrl.cpf){
+document.getElementById('inp_12939').value = dadosUrl.cpf.replace(/\D/g, '');
+}
+if (dadosUrl.nps !== null && dadosUrl.nps !== undefined){
+document.getElementById('inp_17594').value = dadosUrl.nps;
+}
+}
+// ─── Envia via GET (iframe oculto) sem sair da página ─────────────────
+function enviarViaIframe(fields){
+return new Promise(function(resolve){
+var iframe = document.createElement('iframe');
+iframe.name = 'nps_modaza_' + Date.now();
+Object.assign(iframe.style, {
+display: 'none', width: '1px', height: '1px',
+position: 'absolute', left: '-9999px', top: '-9999px',
+visibility: 'hidden', opacity: '0'
+});
+iframe.sandbox = 'allow-forms allow-scripts allow-same-origin';
+iframe.onload = function(){
+setTimeout(function(){ if (iframe.parentNode) document.body.removeChild(iframe); }, 1000);
+};
+document.body.appendChild(iframe);
+var form = document.createElement('form');
+form.method = 'GET';
+form.action = 'https://link.taqi.com.br/u/register.php';
+form.target = iframe.name;
+form.style.display = 'none';
+Object.keys(fields).forEach(function(key){
+var input = document.createElement('input');
+input.type  = 'hidden';
+input.name  = key;
+input.value = fields[key];
+form.appendChild(input);
+});
+document.body.appendChild(form);
+form.submit();
+setTimeout(function(){ if (form.parentNode) document.body.removeChild(form); }, 2000);
+resolve();
+});
+}
+// ─── Envio imediato dos dados capturados via tageamento ────────────────
+function enviarDadosIniciais(dadosUrl){
+var mainForm = document.getElementById('mainForm');
+var fields = {
+CID: mainForm.CID.value,
+SID: mainForm.SID.value,
+UID: mainForm.UID.value,
+f:   mainForm.f.value,
+p:   mainForm.p.value,
+a:   mainForm.a.value,
+el:  dadosUrl.email || '',
+llid: mainForm.llid.value,
+c: mainForm.c.value,
+counted: mainForm.counted.value,
+RID: mainForm.RID.value,
+mailnow: mainForm.mailnow.value,
+inp_1:     dadosUrl.nome      || '',
+inp_2:     dadosUrl.sobrenome || '',
+inp_3:     dadosUrl.email     || '',
+inp_12939: dadosUrl.cpf ? dadosUrl.cpf.replace(/\D/g, '') : '',
+inp_17594: dadosUrl.nps       || ''
+};
+return enviarViaIframe(fields);
+}
+// ─── Visual fixo (cor + boca) de cada uma das 5 posições da escala,
+//     da mais positiva (verde) à mais negativa (vermelho). Rótulos e
+//     valores reais variam por pergunta via data-labels / data-values. ─
+var scaleVisuals = [
+{ color:'#2E8B3D', mouth:'M7.5 14c1.6 2.6 7.4 2.6 9 0' },   // melhor
+{ color:'#8DC63F', mouth:'M8 14.5c1.2 1.6 6.8 1.6 8 0' },
+{ color:'#E8B923', mouth:'M8 15.5h8' },
+{ color:'#E58A2E', mouth:'M8 16c1.2-1.2 6.8-1.2 8 0' },
+{ color:'#D64545', mouth:'M8 16.5c1.2-2 6.8-2 8 0' }        // pior
+];
+function buildFaceSVG(mouthPath){
+return '<svg viewBox="0 0 24 24" fill="none">' +
+'<circle cx="8.5" cy="10" r="1.3" fill="#fff"/>' +
+'<circle cx="15.5" cy="10" r="1.3" fill="#fff"/>' +
+'<path d="' + mouthPath + '" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/>' +
+'</svg>';
+}
+function montarEmojiRows(){
+document.querySelectorAll('.nps-modaza-emoji-row').forEach(function(row){
+var group       = row.getAttribute('data-group');
+var hiddenField  = document.getElementById(row.getAttribute('data-hidden-field'));
+var labels       = (row.getAttribute('data-labels') || '').split(',');
+var values        = (row.getAttribute('data-values') || '').split(',');
+scaleVisuals.forEach(function(visual, i){
+var label = labels[i];
+var value = values[i];
+if (label === undefined || value === undefined) return;
+var item = document.createElement('div');
+item.className = 'nps-modaza-emoji-item';
+var circleLabel = document.createElement('label');
+circleLabel.className = 'nps-modaza-emoji-circle';
+circleLabel.style.background = visual.color;
+circleLabel.innerHTML = buildFaceSVG(visual.mouth);
+var circleInput = document.createElement('input');
+circleInput.type = 'radio';
+circleInput.name = 'nps_modaza_opt_' + group;
+circleInput.value = value;
+circleInput.style.display = 'none';
+circleLabel.prepend(circleInput);
+var textLabel = document.createElement('label');
+textLabel.className = 'nps-modaza-emoji-label';
+var textInput = document.createElement('input');
+textInput.type = 'radio';
+textInput.name = 'nps_modaza_opt_' + group + '_radio';
+textInput.value = value;
+function selecionar(){
+circleInput.checked = true;
+textInput.checked   = true;
+if (hiddenField) hiddenField.value = value;
+}
+textInput.addEventListener('change', selecionar);
+circleInput.addEventListener('change', selecionar);
+var span = document.createElement('span');
+span.textContent = label;
+textLabel.appendChild(textInput);
+textLabel.appendChild(span);
+item.appendChild(circleLabel);
+item.appendChild(textLabel);
+row.appendChild(item);
+});
+});
+}
+// ─── Sincroniza os checkboxes de "características valorizadas" em um
+//     único campo oculto, com os valores marcados separados por vírgula ──
+function sincronizarCheckboxLists(){
+document.querySelectorAll('.nps-modaza-checkbox-list').forEach(function(list){
+var hiddenField = document.getElementById(list.getAttribute('data-hidden-field'));
+if (!hiddenField) return;
+var checkboxes = list.querySelectorAll('.nps-modaza-checkbox-input');
+function atualizar(){
+var selecionados = [];
+checkboxes.forEach(function(cb){ if (cb.checked) selecionados.push(cb.value); });
+hiddenField.value = selecionados.join(',');
+}
+checkboxes.forEach(function(cb){
+cb.addEventListener('change', atualizar);
+});
+});
+}
+// ─── Sincroniza os dois radios da pergunta "Recomendaria" (ícone + texto) ──
+// Corrige o bug em que clicar apenas no radio de texto ("Sim"/"Não")
+// não marcava o campo real inp_17595, deixando-o de fora do envio.
+function sincronizarExpectativa(){
+var hiddenRadios  = document.querySelectorAll('.nps-modaza-exp-hidden-radio');
+var visibleRadios = document.querySelectorAll('.nps-modaza-exp-visible-radio');
+function marcarPar(valor){
+hiddenRadios.forEach(function(r){ r.checked = (r.dataset.pair === valor); });
+visibleRadios.forEach(function(r){ r.checked = (r.dataset.pair === valor); });
+}
+hiddenRadios.forEach(function(r){
+r.addEventListener('change', function(){ marcarPar(r.dataset.pair); });
+});
+visibleRadios.forEach(function(r){
+r.addEventListener('change', function(){ marcarPar(r.dataset.pair); });
+});
+}
+// ─── Submit do formulário (perguntas visíveis + dados do tageamento) ──
+function handleFormSubmit(event){
+event.preventDefault();
+var form = document.getElementById('mainForm');
+var btn  = document.getElementById('npsModazaSubmitBtn');
+btn.disabled = true;
+btn.textContent = 'Enviando...';
+btn.classList.add('sending');
+setTimeout(function(){
+btn.textContent = 'Enviado!';
+btn.classList.remove('sending');
+btn.classList.add('sent');
+setTimeout(function(){
+var formData = new FormData(form);
+var fields = {};
+formData.forEach(function(value, key){ fields[key] = value; });
+enviarViaIframe(fields).then(function(){
+// Mantém a notificação da nota e o formulário visíveis — apenas
+// acrescenta a confirmação acima do botão, sem esconder nada.
+document.getElementById('npsModazaThankYou').classList.remove('nps-modaza-hidden');
+btn.textContent = 'Resposta enviada';
+});
+}, 1200);
+}, 900);
+return false;
+}
+window.handleFormSubmit = handleFormSubmit;
+// ─── Inicialização ──────────────────────────────────────────────────────
+function initializePage(){
+montarEmojiRows();
+sincronizarExpectativa();
+sincronizarCheckboxLists();
+if (!verificarAcessoNPS()){
+document.getElementById('npsModazaLoading').classList.add('nps-modaza-hidden');
+document.getElementById('npsModazaAccessDenied').classList.remove('nps-modaza-hidden');
+return;
+}
+var dadosUrl = capturarDadosURL();
+preencherCamposURL(dadosUrl);
+exibirNotaRecebida(dadosUrl.nps);
+document.getElementById('npsModazaLoading').classList.add('nps-modaza-hidden');
+document.getElementById('npsModazaPage').classList.remove('nps-modaza-hidden');
+if (dadosUrl.email || dadosUrl.nome || dadosUrl.nps !== null){
+enviarDadosIniciais(dadosUrl).then(function(){
+autoSubmissionCompleted = true;
+document.getElementById('npsModazaAutoSubmitted').classList.remove('nps-modaza-hidden');
+});
+}
+}
+if (document.readyState === 'loading'){
+document.addEventListener('DOMContentLoaded', initializePage);
+} else {
+initializePage();
+}
+})();
+</script>

@@ -1,0 +1,187 @@
+---
+// Contact form. Posts to the Emarsys form configured in config.mjs (EMARSYS_CONTATO), through a
+// hidden iframe like the NPS survey does. Until the CRM team fills formId, it opens an e-mail
+// to SITE.email with the message filled in, so no contact is lost.
+import Icon from './Icon.astro';
+import { EMARSYS_CONTATO, TIPOS_ATENDIMENTO, SITE } from '../config.mjs';
+
+const config = {
+  ...EMARSYS_CONTATO,
+  email: SITE.email,
+  enabled: Boolean(EMARSYS_CONTATO.formId),
+};
+---
+
+<form class="contact-form" data-contact-form data-config={JSON.stringify(config)} novalidate>
+  <div class="field">
+    <label for="cf-tipo">Assunto</label>
+    <select class="select" id="cf-tipo" name="tipo" required>
+      <option value="" disabled selected>Selecione</option>
+      {TIPOS_ATENDIMENTO.map((t) => <option>{t}</option>)}
+    </select>
+  </div>
+  <div class="contact-form__row">
+    <div class="field">
+      <label for="cf-nome">Nome</label>
+      <input class="input" id="cf-nome" name="nome" autocomplete="name" required />
+    </div>
+    <div class="field">
+      <label for="cf-telefone">Telefone ou WhatsApp</label>
+      <input class="input" id="cf-telefone" name="telefone" type="tel" autocomplete="tel" inputmode="tel" />
+    </div>
+  </div>
+  <div class="field">
+    <label for="cf-email">E-mail</label>
+    <input class="input" id="cf-email" name="email" type="email" autocomplete="email" required />
+  </div>
+  <div class="field">
+    <label for="cf-mensagem">Mensagem</label>
+    <textarea class="textarea" id="cf-mensagem" name="mensagem" required placeholder="Se for sobre um produto, informe o nome ou o código (SKU)."></textarea>
+  </div>
+  <p class="contact-form__legal">
+    Usamos seus dados apenas para responder a esta mensagem.
+  </p>
+  <p class="contact-form__error" role="alert" hidden data-error></p>
+  <button class="btn" type="submit" data-submit>
+    Enviar mensagem
+    <Icon name="arrow-right" />
+  </button>
+  <div class="contact-form__done" hidden data-done role="status">
+    <Icon name="check" />
+    <p data-done-text></p>
+  </div>
+</form>
+
+<style>
+  .contact-form {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .contact-form__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+
+  .contact-form__legal {
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .contact-form__error {
+    color: #a3261b;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .contact-form .btn {
+    justify-self: start;
+  }
+
+  .contact-form__done {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius);
+    background: #eef5ec;
+    color: #24502a;
+  }
+
+  .contact-form__done[hidden] {
+    display: none;
+  }
+
+  .contact-form__done svg {
+    width: 1.3rem;
+    flex: none;
+  }
+
+  .contact-form :user-invalid {
+    border-color: #a3261b;
+  }
+
+  @media (max-width: 34rem) {
+    .contact-form__row {
+      grid-template-columns: 1fr;
+    }
+
+    .contact-form .btn {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  type Config = {
+    action: string;
+    cid: string;
+    formId: string;
+    email: string;
+    enabled: boolean;
+    campos: Record<'nome' | 'email' | 'telefone' | 'tipo' | 'mensagem', string>;
+  };
+
+  for (const form of document.querySelectorAll<HTMLFormElement>('[data-contact-form]')) {
+    const config: Config = JSON.parse(form.dataset.config!);
+    const error = form.querySelector<HTMLElement>('[data-error]')!;
+    const done = form.querySelector<HTMLElement>('[data-done]')!;
+    const doneText = form.querySelector<HTMLElement>('[data-done-text]')!;
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+
+    // Same hidden fields the Emarsys NPS form sends
+    const sendToEmarsys = (values: Record<string, string>) =>
+      new Promise<void>((resolve) => {
+        const iframe = document.createElement('iframe');
+        iframe.name = `emarsys_${Date.now()}`;
+        iframe.hidden = true;
+        document.body.appendChild(iframe);
+        const post = document.createElement('form');
+        post.method = 'POST';
+        post.action = config.action;
+        post.target = iframe.name;
+        post.hidden = true;
+        const fields: Record<string, string> = { CID: config.cid, f: config.formId, p: '2', a: 'r', SID: '', UID: '', el: values.email, llid: '', c: '', counted: '', RID: '', mailnow: '' };
+        for (const [key, field] of Object.entries(config.campos)) if (field) fields[field] = values[key] ?? '';
+        for (const [name, value] of Object.entries(fields)) {
+          const input = document.createElement('input');
+          input.name = name;
+          input.value = value;
+          post.appendChild(input);
+        }
+        document.body.appendChild(post);
+        iframe.addEventListener('load', () => resolve(), { once: true });
+        setTimeout(resolve, 6000);
+        post.submit();
+      });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      error.hidden = true;
+      if (!form.checkValidity()) {
+        error.textContent = 'Preencha assunto, nome, e-mail válido e mensagem.';
+        error.hidden = false;
+        form.querySelector<HTMLElement>(':invalid')?.focus();
+        return;
+      }
+      const values = Object.fromEntries(new FormData(form)) as Record<string, string>;
+
+      if (!config.enabled) {
+        const subject = `[Site] ${values.tipo} — ${values.nome}`;
+        const body = `${values.mensagem}\n\n${values.nome}\n${values.email}${values.telefone ? `\n${values.telefone}` : ''}`;
+        location.href = `mailto:${config.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        doneText.textContent = `Abrimos o seu aplicativo de e-mail com a mensagem pronta. Se ele não abrir, escreva para ${config.email}.`;
+        done.hidden = false;
+        return;
+      }
+
+      submit.disabled = true;
+      submit.textContent = 'Enviando…';
+      await sendToEmarsys(values);
+      form.querySelectorAll<HTMLElement>('.field, .contact-form__row, .contact-form__legal, [data-submit]').forEach((el) => (el.hidden = true));
+      doneText.textContent = 'Mensagem enviada! Nossa equipe vai responder no e-mail informado.';
+      done.hidden = false;
+    });
+  }
+</script>

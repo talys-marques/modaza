@@ -1,0 +1,427 @@
+---
+import { url } from '../lib/url.mjs';
+// Product listing shared by /produtos/ and the category pages.
+// Categories are real pages (good for SEO and work without JS); search filters the current page.
+import Breadcrumbs from './Breadcrumbs.astro';
+import ProductCard from './ProductCard.astro';
+import Icon from './Icon.astro';
+import Marca from './Marca.astro';
+import Forma from './Forma.astro';
+import { catalogo } from '../lib/catalogo.mjs';
+
+interface Props {
+  titulo: string;
+  descricao?: string;
+  produtos: any[];
+  breadcrumbs: { label: string; href: string }[];
+  pilarAtual?: string;
+  subAtual?: string;
+  // Handles the filter parameters of the old WordPress listing (/produtos-novo/?e-filter-...)
+  legado?: boolean;
+}
+
+const { titulo, descricao, produtos, breadcrumbs, pilarAtual, subAtual, legado = false } = Astro.props;
+const { pilares, produtos: todos } = catalogo();
+const pilar = pilares.find((p) => p.slug === pilarAtual);
+const scopeLabel = pilar ? (subAtual ? `em ${titulo}` : `em ${pilar.nome}`) : 'no catálogo';
+---
+
+<section class="listing-head" data-pilar={pilar?.slug}>
+  <div class="container listing-head__inner">
+    {
+      pilar && (
+        <div class="listing-head__frase">
+          <Marca name={`frase-${pilar.slug}` as any} />
+        </div>
+      )
+    }
+    <Breadcrumbs items={breadcrumbs} />
+    <h1>{titulo}</h1>
+    {descricao && <p class="lead">{descricao}</p>}
+
+    <ul class="chips listing-head__chips" aria-label="Categorias">
+      <li>
+        <a class="chip" href={url('/produtos/')} aria-current={!pilar ? 'page' : undefined}>
+          Todos <span class="chip__count">{todos.length}</span>
+        </a>
+      </li>
+      {
+        pilares.map((p) => (
+          <li>
+            <a class="chip" href={p.url} aria-current={p.slug === pilarAtual && !subAtual ? 'page' : undefined}>
+              <Forma pilar={p.slug} class="chip__shape" />
+              {p.nome} <span class="chip__count">{p.produtos.length}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<div class="container listing" data-pilar={pilar?.slug} data-listing data-legacy={legado ? '' : undefined}>
+  <aside class="listing__aside" aria-label="Subcategorias">
+    {
+      (pilar ? [pilar] : pilares).map((p) => (
+        <div class="tree" data-pilar={p.slug}>
+          <a href={p.url} class="tree__title" aria-current={p.slug === pilarAtual && !subAtual ? 'page' : undefined}>
+            <Forma pilar={p.slug} class="tree__shape" />
+            {p.nome}
+          </a>
+          <ul>
+            {p.subcategorias.map((s) => (
+              <li>
+                <a href={s.url} aria-current={p.slug === pilarAtual && s.slug === subAtual ? 'page' : undefined}>
+                  {s.nome}
+                  <span>{s.produtos.length}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </aside>
+
+  <div class="listing__main">
+    {
+      pilar && (
+        <ul class="chips listing__subchips" aria-label={`Subcategorias de ${pilar.nome}`}>
+          {pilar.subcategorias.map((s) => (
+            <li>
+              <a class="chip" href={s.url} aria-current={s.slug === subAtual ? 'page' : undefined}>
+                {s.nome}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <div class="toolbar">
+      <div class="toolbar__search">
+        <Icon name="search" />
+        <label for="filtro-busca" class="sr-only">Buscar {scopeLabel}</label>
+        <input id="filtro-busca" type="search" placeholder={`Buscar ${scopeLabel}`} autocomplete="off" data-search />
+      </div>
+      <p class="toolbar__count" aria-live="polite" data-count>
+        {produtos.length} {produtos.length === 1 ? 'produto' : 'produtos'}
+      </p>
+    </div>
+
+    <ul class="product-grid" data-grid>
+      {produtos.map((p, i) => <ProductCard produto={p} eager={i < 4} />)}
+    </ul>
+
+    <div class="empty" hidden data-empty>
+      <p><strong>Nenhum produto encontrado.</strong></p>
+      <p class="muted">Tente outra palavra, o código (SKU) do produto ou busque em todo o catálogo.</p>
+      <div class="empty__actions">
+        <button class="btn btn--ghost" type="button" data-clear>Limpar busca</button>
+        {pilar && <a class="btn btn--ghost" href={url('/produtos/')} data-all>Buscar em todos os produtos</a>}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .listing-head {
+    background: var(--bg-deep);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .listing-head__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: clamp(2rem, 1.5rem + 2vw, 3.25rem) 1.75rem;
+  }
+
+  .listing-head h1 {
+    font-size: var(--step-4);
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+
+  /* Line pages: line color with its pattern; the tagline sits in a creme reserve box */
+  .listing-head[data-pilar] {
+    background: var(--pilar) var(--estampa) 0 0 / auto 13rem repeat;
+    border-bottom: 0;
+    color: var(--pilar-on);
+  }
+
+  .listing-head[data-pilar] .lead {
+    color: inherit;
+  }
+
+  .listing-head[data-pilar] :global(.crumbs) {
+    --ink-2: var(--pilar-on);
+    --ink-3: var(--pilar-on);
+    --ink: var(--pilar-on);
+  }
+
+  .listing-head[data-pilar] .chip {
+    border-color: transparent;
+  }
+
+  .listing-head[data-pilar] .chip:not([aria-current='page']) {
+    color: var(--carbono);
+  }
+
+  .listing-head__frase {
+    display: none;
+  }
+
+  @media (min-width: 60rem) {
+    .listing-head[data-pilar] .listing-head__inner {
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 3rem;
+    }
+
+    .listing-head[data-pilar] .listing-head__inner > :not(.listing-head__frase) {
+      grid-column: 1;
+    }
+
+    .listing-head__frase {
+      display: block;
+      grid-column: 2;
+      grid-row: 1 / span 4;
+      align-self: center;
+      padding: 1.75rem 2rem;
+      background: var(--creme);
+      color: var(--carbono);
+    }
+
+    .listing-head__frase :global(svg) {
+      width: 15rem;
+      height: auto;
+    }
+  }
+
+  .chip__shape,
+  .tree__shape {
+    flex: none;
+    width: 0.7rem;
+    height: 0.7rem;
+  }
+
+  .listing-head .lead {
+    max-width: 48rem;
+  }
+
+  .listing-head__chips {
+    margin-top: 0.75rem;
+  }
+
+  .listing {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+    padding-block: 2.5rem 5rem;
+  }
+
+  .listing__aside {
+    position: sticky;
+    top: calc(var(--header-h) + 1.5rem);
+    align-self: start;
+    display: grid;
+    gap: 1.75rem;
+    max-height: calc(100dvh - var(--header-h) - 3rem);
+    overflow-y: auto;
+  }
+
+  .tree__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .tree ul {
+    display: grid;
+    gap: 0.1rem;
+    margin: 0;
+    padding: 0 0 0 0.85rem;
+    list-style: none;
+    border-left: 1px solid var(--line);
+  }
+
+  .tree ul a {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    text-decoration: none;
+  }
+
+  .tree ul a span {
+    color: var(--ink-3);
+    font-size: 0.8125rem;
+  }
+
+  .tree a:hover {
+    color: var(--ink);
+  }
+
+  .tree ul a:hover {
+    background: var(--bg-deep);
+  }
+
+  .tree a[aria-current='page'] {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .tree ul a[aria-current='page'] {
+    background: var(--surface);
+    box-shadow: inset 3px 0 0 var(--pilar);
+  }
+
+  .listing__subchips {
+    display: none;
+    margin-bottom: 1.25rem;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .toolbar__search {
+    position: relative;
+    flex: 1 1 22rem;
+    max-width: 30rem;
+  }
+
+  .toolbar__search svg {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    width: 1.1rem;
+    transform: translateY(-50%);
+    color: var(--ink-3);
+    pointer-events: none;
+  }
+
+  .toolbar__search input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 1rem 0.7rem 2.75rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+
+  .toolbar__search input:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgb(51 51 51 / 0.08);
+  }
+
+  .toolbar__count {
+    font-size: 0.875rem;
+    color: var(--ink-3);
+  }
+
+  .empty {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: center;
+    padding: 4rem 1rem;
+    text-align: center;
+    background: var(--surface);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+  }
+
+  .empty[hidden] {
+    display: none;
+  }
+
+  .empty__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  @media (max-width: 60rem) {
+    .listing {
+      grid-template-columns: minmax(0, 1fr);
+      padding-top: 1.5rem;
+    }
+
+    .listing__aside {
+      display: none;
+    }
+
+    .listing__subchips {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      margin-inline: calc(-1 * var(--gutter));
+      padding-inline: var(--gutter);
+      padding-bottom: 0.25rem;
+      scrollbar-width: none;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-listing]');
+
+  // Old WordPress filter links: /produtos-novo/?e-filter-06a92b6-pa_categoria=construir and /produtos/?botao=btnConstruir
+  if (root?.hasAttribute('data-legacy')) {
+    const params = new URLSearchParams(location.search);
+    const legacyKey = [...params.keys()].find((k) => k.startsWith('e-filter-') && k.endsWith('pa_categoria'));
+    const pillar = (legacyKey && params.get(legacyKey)) || params.get('botao')?.replace(/^btn/, '');
+    if (pillar) location.replace(`${import.meta.env.BASE_URL}categoria-produto/${pillar.toLowerCase()}/`);
+  }
+
+  if (root) {
+    const input = root.querySelector<HTMLInputElement>('[data-search]')!;
+    const cards = [...root.querySelectorAll<HTMLElement>('[data-grid] > li')];
+    const count = root.querySelector<HTMLElement>('[data-count]')!;
+    const empty = root.querySelector<HTMLElement>('[data-empty]')!;
+    const allLink = root.querySelector<HTMLAnchorElement>('[data-all]');
+    const normalize = (s: string) => s.toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+
+    const apply = () => {
+      const terms = normalize(input.value).split(/\s+/).filter(Boolean);
+      let visible = 0;
+      for (const card of cards) {
+        const text = card.dataset.busca ?? '';
+        const show = terms.every((t) => text.includes(t));
+        card.hidden = !show;
+        if (show) visible++;
+      }
+      count.textContent = `${visible} ${visible === 1 ? 'produto' : 'produtos'}`;
+      empty.hidden = visible > 0;
+
+      const url = new URL(location.href);
+      if (input.value.trim()) url.searchParams.set('busca', input.value.trim());
+      else url.searchParams.delete('busca');
+      history.replaceState(null, '', url);
+      if (allLink) allLink.href = input.value.trim() ? `${import.meta.env.BASE_URL}produtos/?busca=${encodeURIComponent(input.value.trim())}` : `${import.meta.env.BASE_URL}produtos/`;
+    };
+
+    input.value = new URLSearchParams(location.search).get('busca') ?? '';
+    if (input.value) apply();
+    input.addEventListener('input', apply);
+    root.querySelector('[data-clear]')?.addEventListener('click', () => {
+      input.value = '';
+      apply();
+      input.focus();
+    });
+  }
+</script>

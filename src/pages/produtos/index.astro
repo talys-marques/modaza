@@ -1,0 +1,27 @@
+---
+import { url } from '../../lib/url.mjs';
+import Base from '../../layouts/Base.astro';
+import CatalogBrowser from '../../components/CatalogBrowser.astro';
+import { catalogo } from '../../lib/catalogo.mjs';
+import { breadcrumbLd, itemListLd } from '../../lib/seo.mjs';
+
+const { produtos } = catalogo();
+const breadcrumbs = [
+  { label: 'Início', href: url('/') },
+  { label: 'Produtos', href: url('/produtos/') },
+];
+---
+
+<Base
+  title="Produtos"
+  description="Porcelanatos, pisos vinílicos, painéis ripados, metais, louças e iluminação Modaza. Conheça o catálogo completo e veja onde comprar."
+  jsonLd={[breadcrumbLd(breadcrumbs), itemListLd(produtos)]}
+>
+  <CatalogBrowser
+    titulo="Produtos"
+    descricao="Para cada ambiente, um produto Modaza para compor. Busque pelo nome, pela linha ou pelo código (SKU)."
+    produtos={produtos}
+    breadcrumbs={breadcrumbs}
+    legado
+  />
+</Base>

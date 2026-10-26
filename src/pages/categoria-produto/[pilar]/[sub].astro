@@ -1,0 +1,39 @@
+---
+import { url } from '../../../lib/url.mjs';
+import Base from '../../../layouts/Base.astro';
+import CatalogBrowser from '../../../components/CatalogBrowser.astro';
+import { catalogo } from '../../../lib/catalogo.mjs';
+import { breadcrumbLd, itemListLd } from '../../../lib/seo.mjs';
+
+export function getStaticPaths() {
+  return catalogo().pilares.flatMap((pilar) =>
+    pilar.subcategorias.map((sub) => ({ params: { pilar: pilar.slug, sub: sub.slug }, props: { pilar, sub } }))
+  );
+}
+
+const { pilar, sub } = Astro.props;
+const breadcrumbs = [
+  { label: 'Início', href: url('/') },
+  { label: 'Produtos', href: url('/produtos/') },
+  { label: pilar.nome, href: pilar.url },
+  { label: sub.nome, href: sub.url },
+];
+const total = sub.produtos.length;
+const descricao = `${total} ${total === 1 ? 'opção' : 'opções'} de ${sub.nome.toLocaleLowerCase('pt-BR')} Modaza, da linha ${pilar.nome}.`;
+---
+
+<Base
+  title={`${sub.nome} — ${pilar.nome}`}
+  description={`${descricao} Veja fotos, especificações técnicas e onde comprar.`}
+  image={sub.produtos[0]?.imagens[0]?.src}
+  jsonLd={[breadcrumbLd(breadcrumbs), itemListLd(sub.produtos)]}
+>
+  <CatalogBrowser
+    titulo={sub.nome}
+    descricao={descricao}
+    produtos={sub.produtos}
+    breadcrumbs={breadcrumbs}
+    pilarAtual={pilar.slug}
+    subAtual={sub.slug}
+  />
+</Base>

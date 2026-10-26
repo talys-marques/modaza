@@ -1,0 +1,19 @@
+---
+// NPS survey sent by e-mail (Emarsys). The block below is the survey from the old site, kept
+// as is: it reads name, e-mail, CPF and score from the link and posts to Emarsys form 1499.
+// Same URL as before, because e-mails already sent point here. Not indexed.
+import Base from '../layouts/Base.astro';
+import nps from '../data/nps-emarsys.html?raw';
+---
+
+<Base title="Pesquisa de satisfação" description="Pesquisa de satisfação Modaza." noindex>
+  <section class="section section--tight">
+    <div class="container nps-wrap" set:html={nps} />
+  </section>
+</Base>
+
+<style>
+  .nps-wrap :global(#npsModazaWidget) {
+    font-family: var(--font);
+  }
+</style>

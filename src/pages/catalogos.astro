@@ -1,0 +1,121 @@
+---
+import { url } from '../lib/url.mjs';
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Icon from '../components/Icon.astro';
+import { catalogo } from '../lib/catalogo.mjs';
+import { breadcrumbLd } from '../lib/seo.mjs';
+
+const { catalogos } = catalogo();
+const breadcrumbs = [
+  { label: 'Início', href: url('/') },
+  { label: 'Catálogos', href: url('/catalogos/') },
+];
+const formatMB = (mb: number) => `${mb.toLocaleString('pt-BR', { maximumFractionDigits: 0 })} MB`;
+---
+
+<Base
+  title="Catálogos"
+  description="Baixe os catálogos Modaza em PDF: porcelanatos, painéis, decks e rodapés, pisos vinílicos, louças sanitárias, metais e iluminação."
+  jsonLd={[breadcrumbLd(breadcrumbs)]}
+>
+  <section class="page-head">
+    <div class="container page-head__inner">
+      <Breadcrumbs items={breadcrumbs} />
+      <h1>Catálogos</h1>
+      <p class="lead">Confira os catálogos completos das linhas Modaza, com fotos, medidas e especificações técnicas.</p>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <ul class="container catalogs">
+      {
+        catalogos.map((c) => (
+          <li class="catalog">
+            <a class="catalog__cover" href={c.url} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+              {c.capaImg && <img src={c.capaImg.thumb} width={c.capaImg.tw} height={c.capaImg.th} alt="" loading="lazy" />}
+              <span class="catalog__year">{c.ano}</span>
+            </a>
+            <div class="catalog__body">
+              <h2>{c.titulo}</h2>
+              <p class="muted">
+                PDF · {formatMB(c.tamanhoMB)}
+              </p>
+              <a class="btn btn--ghost" href={c.url} target="_blank" rel="noopener">
+                <Icon name="download" />
+                Baixar catálogo
+                <span class="sr-only">de {c.titulo} (PDF, {formatMB(c.tamanhoMB)})</span>
+              </a>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .catalogs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+    gap: clamp(1rem, 0.5rem + 1.5vw, 1.75rem);
+    margin: 0 auto;
+    list-style: none;
+  }
+
+  .catalog {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .catalog__cover {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .catalog__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease);
+  }
+
+  .catalog:hover .catalog__cover img {
+    transform: scale(1.04);
+  }
+
+  .catalog__year {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .catalog__body {
+    display: grid;
+    align-content: start;
+    gap: 0.5rem;
+    padding: 1.4rem 1.4rem 1.5rem;
+  }
+
+  .catalog__body h2 {
+    font-size: 1.25rem;
+  }
+
+  .catalog__body .btn {
+    justify-self: start;
+    margin-top: 0.75rem;
+  }
+</style>

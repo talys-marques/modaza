@@ -1,0 +1,38 @@
+---
+// Brand artwork from the identity manual, inlined so it takes the text color:
+// carbono on light backgrounds (positive), creme on dark ones (negative). Never apply filters or effects to it.
+import logo from '../assets/marca/logo.svg?raw';
+import simbolo from '../assets/marca/simbolo.svg?raw';
+import fraseConceito from '../assets/marca/frase-conceito.svg?raw';
+import fraseConstruir from '../assets/marca/frase-construir.svg?raw';
+import fraseDecorar from '../assets/marca/frase-decorar.svg?raw';
+import fraseIluminar from '../assets/marca/frase-iluminar.svg?raw';
+import fraseProteger from '../assets/marca/frase-proteger.svg?raw';
+
+const art = {
+  logo: { svg: logo, label: 'Modaza' },
+  simbolo: { svg: simbolo, label: 'Modaza' },
+  'frase-conceito': { svg: fraseConceito, label: 'Faz parte da sua vida' },
+  'frase-construir': { svg: fraseConstruir, label: 'Construir faz parte da sua vida' },
+  'frase-decorar': { svg: fraseDecorar, label: 'Decorar faz parte da sua vida' },
+  'frase-iluminar': { svg: fraseIluminar, label: 'Iluminar faz parte da sua vida' },
+  'frase-proteger': { svg: fraseProteger, label: 'Proteger faz parte da sua vida' },
+};
+
+interface Props {
+  name: keyof typeof art;
+  class?: string;
+  // Decorative when the same text is already on the page
+  decorative?: boolean;
+}
+
+const { name, class: className, decorative = false, ...rest } = Astro.props;
+const { svg, label } = art[name];
+const a11y = decorative ? 'aria-hidden="true" focusable="false"' : `role="img" aria-label="${label}"`;
+const scope = Object.keys(rest)
+  .filter((k) => k.startsWith('data-astro-cid'))
+  .join(' ');
+const html = svg.replace('<svg ', `<svg class="${className ?? ''}" ${scope} ${a11y} `);
+---
+
+<Fragment set:html={html} />

@@ -1,0 +1,26 @@
+{
+  "name": "site-modaza",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "imagens": "node scripts/preparar-imagens.mjs",
+    "validar": "node scripts/validar-dados.mjs",
+    "predev": "npm run imagens",
+    "dev": "astro dev",
+    "prebuild": "npm run imagens",
+    "build": "astro build",
+    "preview": "astro preview",
+    "verificar": "node scripts/verificar-links.mjs",
+    "exportar": "node scripts/exportar-catalogo.mjs"
+  },
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/urbanist": "^5.3.0",
+    "astro": "^7.4.2",
+    "sharp": "^0.35.5"
+  }
+}

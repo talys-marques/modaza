@@ -1,0 +1,129 @@
+---
+import Forma from './Forma.astro';
+
+interface Props {
+  produto: any;
+  eager?: boolean;
+}
+
+const { produto, eager = false } = Astro.props;
+const img = produto.imagens[0];
+---
+
+<li class="card" data-busca={produto.busca} data-nome={produto.nome} data-pilar={produto.pilar.slug}>
+  <a href={produto.url} class="card__link">
+    <div class="card__media">
+      <img
+        src={img.thumb}
+        width={img.tw}
+        height={img.th}
+        alt=""
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+    </div>
+    <div class="card__body">
+      <span class="card__cat"><Forma pilar={produto.pilar.slug} class="card__shape" />{produto.subcategorias[0].nome}</span>
+      <h3 class="card__name">{produto.nome}</h3>
+      <span class="card__sku">SKU {produto.sku}</span>
+    </div>
+  </a>
+</li>
+
+<style>
+  .card {
+    min-width: 0;
+  }
+
+  .card[hidden] {
+    display: none;
+  }
+
+  .card__link {
+    display: grid;
+    height: 100%;
+    grid-template-rows: auto 1fr;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+    text-decoration: none;
+    transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+
+  .card__link:hover {
+    border-color: var(--pilar);
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+  }
+
+  .card__media {
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .card__link:hover .card__media img {
+    transform: scale(1.04);
+  }
+
+  .card__body {
+    display: grid;
+    align-content: start;
+    gap: 0.35rem;
+    padding: 0.9rem 1rem 1.1rem;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .card__cat {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pilar-ink);
+  }
+
+  .card__shape {
+    flex: none;
+    width: 0.7rem;
+    height: 0.7rem;
+  }
+
+  .card__name {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+  }
+
+  .card__sku {
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  @media (max-width: 34rem) {
+    .card__body {
+      padding: 0.75rem 0.75rem 0.9rem;
+    }
+
+    .card__name {
+      font-size: 0.875rem;
+    }
+  }
+</style>

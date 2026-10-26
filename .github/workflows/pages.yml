@@ -1,0 +1,62 @@
+# Builds the site and publishes it on GitHub Pages on every push to main.
+# configure-pages gives the address: talys-marques.github.io/modaza/ (base /modaza) or, once a
+# custom domain is set in Settings > Pages, that domain at the root (base empty).
+name: Deploy no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - id: pages
+        uses: actions/configure-pages@v5
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          GITHUB_PAGES: 'true'
+          # Optional repository variable (Settings > Secrets and variables > Actions > Variables)
+          PUBLIC_ARQUIVOS_URL: ${{ vars.PUBLIC_ARQUIVOS_URL }}
+
+      - name: Verificar links
+        run: npm run verificar
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

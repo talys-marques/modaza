@@ -1,0 +1,28 @@
+---
+import { url } from '../../../lib/url.mjs';
+import Base from '../../../layouts/Base.astro';
+import CatalogBrowser from '../../../components/CatalogBrowser.astro';
+import { catalogo } from '../../../lib/catalogo.mjs';
+import { breadcrumbLd, itemListLd } from '../../../lib/seo.mjs';
+
+export function getStaticPaths() {
+  return catalogo().pilares.map((pilar) => ({ params: { pilar: pilar.slug }, props: { pilar } }));
+}
+
+const { pilar } = Astro.props;
+const breadcrumbs = [
+  { label: 'Início', href: url('/') },
+  { label: 'Produtos', href: url('/produtos/') },
+  { label: pilar.nome, href: pilar.url },
+];
+const subs = pilar.subcategorias.map((s) => s.nome.toLocaleLowerCase('pt-BR')).join(', ');
+---
+
+<Base
+  title={`${pilar.nome}: ${pilar.subcategorias.slice(0, 4).map((s) => s.nome).join(', ')}`}
+  description={`${pilar.resumo} Conheça ${pilar.produtos.length} produtos Modaza: ${subs}.`}
+  image={pilar.capa?.src}
+  jsonLd={[breadcrumbLd(breadcrumbs), itemListLd(pilar.produtos)]}
+>
+  <CatalogBrowser titulo={pilar.nome} descricao={pilar.resumo} produtos={pilar.produtos} breadcrumbs={breadcrumbs} pilarAtual={pilar.slug} />
+</Base>

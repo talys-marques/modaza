@@ -1,0 +1,557 @@
+---
+import { url } from '../../lib/url.mjs';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import Icon from '../../components/Icon.astro';
+import { catalogo, relacionados } from '../../lib/catalogo.mjs';
+import { breadcrumbLd, productLd } from '../../lib/seo.mjs';
+import { SITE } from '../../config.mjs';
+
+export function getStaticPaths() {
+  return catalogo().produtos.map((produto) => ({ params: { slug: produto.slug }, props: { produto } }));
+}
+
+const { produto: p } = Astro.props;
+const sub = p.subcategorias[0];
+const breadcrumbs = [
+  { label: 'Início', href: url('/') },
+  { label: p.pilar.nome, href: p.pilar.url },
+  { label: sub.nome, href: sub.url },
+  { label: p.nome, href: p.url },
+];
+const related = relacionados(p);
+
+// "Comprar no taQi" when the link points to a known partner
+const partnerName = (() => {
+  if (!p.linkCompra) return null;
+  const host = new URL(p.linkCompra).hostname;
+  return host.includes('taqi.com.br') ? 'taQi' : null;
+})();
+const whatsappText = encodeURIComponent(`Olá! Quero saber onde comprar o produto ${p.nome} (SKU ${p.sku}).`);
+const whatsappUrl = `https://wa.me/${SITE.whatsapp.numero}?text=${whatsappText}`;
+const description = (p.descricaoCurta || `${p.nome}. Veja fotos, especificações técnicas e onde comprar.`).slice(0, 158);
+---
+
+<Base title={p.nome} description={description} image={p.imagens[0].src} jsonLd={[breadcrumbLd(breadcrumbs), productLd(p)]}>
+  <div class="container product-top">
+    <Breadcrumbs items={breadcrumbs} />
+  </div>
+
+  <article class="container product" data-pilar={p.pilar.slug}>
+    <div class="gallery" data-gallery>
+      <button class="gallery__main" type="button" data-zoom aria-label="Ampliar foto">
+        <img
+          src={p.imagens[0].src}
+          width={p.imagens[0].w}
+          height={p.imagens[0].h}
+          alt={p.nome}
+          fetchpriority="high"
+          data-main
+        />
+        <span class="gallery__zoom"><Icon name="maximize" /></span>
+      </button>
+      {
+        p.imagens.length > 1 && (
+          <ul class="gallery__thumbs" aria-label="Fotos do produto">
+            {p.imagens.map((img, i) => (
+              <li>
+                <button
+                  type="button"
+                  class="gallery__thumb"
+                  aria-current={i === 0 ? 'true' : undefined}
+                  data-src={img.src}
+                  data-w={img.w}
+                  data-h={img.h}
+                  aria-label={`Foto ${i + 1} de ${p.imagens.length}`}
+                >
+                  <img src={img.thumb} width={img.tw} height={img.th} alt="" loading="lazy" decoding="async" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      <dialog class="lightbox" data-lightbox aria-label={`Foto ampliada: ${p.nome}`}>
+        <img src={p.imagens[0].src} alt={p.nome} data-lightbox-img />
+        <form method="dialog">
+          <button class="lightbox__close" aria-label="Fechar"><Icon name="x" /></button>
+        </form>
+      </dialog>
+    </div>
+
+    <div class="info">
+      <a class="eyebrow info__cat" href={sub.url}>{p.pilar.nome} · {sub.nome}</a>
+      <h1>{p.nome}</h1>
+      <p class="info__sku">SKU {p.sku}</p>
+      {p.descricaoCurta && <p class="info__desc">{p.descricaoCurta}</p>}
+
+      <div class="info__actions">
+        {
+          p.linkCompra ? (
+            <a class="btn" href={p.linkCompra} target="_blank" rel="noopener">
+              <Icon name="store" />
+              {partnerName ? `Comprar no ${partnerName}` : 'Comprar no parceiro'}
+              <Icon name="arrow-up-right" />
+            </a>
+          ) : (
+            <a class="btn" href={url('/#ondeencontrar')}>
+              <Icon name="map-pin" />
+              Onde encontrar
+            </a>
+          )
+        }
+        <a class="btn btn--ghost" href={whatsappUrl} target="_blank" rel="noopener">
+          <Icon name="whatsapp" />
+          Falar com a Modaza
+        </a>
+      </div>
+      {p.linkCompra && <p class="info__note">Você será levado ao site de um parceiro autorizado. <a href={url('/#ondeencontrar')}>Ver outras lojas</a></p>}
+
+      {
+        p.garantia && (
+          <div class="info__warranty">
+            <Icon name="shield" />
+            <div>
+              <strong>Garantia</strong>
+              <span>{p.garantia}</span>
+            </div>
+          </div>
+        )
+      }
+
+      {
+        p.especificacoes.length > 0 && (
+          <div class="specs">
+            <h2>Especificações</h2>
+            {p.especificacoes.map((g, i) => {
+              const highlights = g.itens.filter((it) => it.atributo === 'Destaque');
+              const pairs = g.itens.filter((it) => it.atributo !== 'Destaque');
+              return (
+                <details class="specs__group" open={i < 2}>
+                  <summary>
+                    {g.grupo}
+                    <Icon name="chevron-down" />
+                  </summary>
+                  {pairs.length > 0 && (
+                    <dl>
+                      {pairs.map((it) => (
+                        <div>
+                          <dt>{it.atributo}</dt>
+                          <dd>{it.valor}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                  {highlights.length > 0 && (
+                    <ul class="specs__list">
+                      {highlights.map((it) => (
+                        <li>
+                          <Icon name="check" />
+                          {it.valor}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </details>
+              );
+            })}
+          </div>
+        )
+      }
+
+      {
+        p.descricao && (
+          <div class="about">
+            <h2>Sobre o produto</h2>
+            <div class="prose">
+              {p.descricao.split('\n').map((par) => (
+                <p>{par}</p>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </article>
+
+  {
+    related.length > 0 && (
+      <section class="section section--white related" data-pilar={p.pilar.slug}>
+        <div class="container">
+          <div class="section-head">
+            <div class="section-head__text">
+              <span class="eyebrow">Da mesma linha</span>
+              <h2>Você também pode gostar</h2>
+            </div>
+            <a class="link-arrow" href={sub.url}>
+              Ver tudo em {sub.nome}
+              <Icon name="arrow-right" />
+            </a>
+          </div>
+          <ul class="product-grid">
+            {related.map((r) => (
+              <ProductCard produto={r} />
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .product-top {
+    padding-top: 1.5rem;
+  }
+
+  .product {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(1.5rem, 1rem + 3vw, 4.5rem);
+    padding-block: 1.5rem clamp(3rem, 2rem + 4vw, 6rem);
+  }
+
+  /* Gallery */
+  .gallery {
+    position: sticky;
+    top: calc(var(--header-h) + 1.5rem);
+    align-self: start;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .gallery__main {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    background: #fff;
+    overflow: hidden;
+    cursor: zoom-in;
+  }
+
+  .gallery__main img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .gallery__zoom {
+    position: absolute;
+    right: 0.85rem;
+    bottom: 0.85rem;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.9);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transition: opacity 0.2s var(--ease);
+  }
+
+  .gallery__zoom svg {
+    width: 1.1rem;
+  }
+
+  .gallery__main:hover .gallery__zoom,
+  .gallery__main:focus-visible .gallery__zoom {
+    opacity: 1;
+  }
+
+  .gallery__thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gallery__thumb {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+
+  .gallery__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .gallery__thumb:hover {
+    opacity: 1;
+  }
+
+  .gallery__thumb[aria-current='true'] {
+    opacity: 1;
+    border-color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+
+  .lightbox {
+    width: min(96vw, 1200px);
+    max-height: 94vh;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+    background: #fff;
+  }
+
+  .lightbox::backdrop {
+    background: rgb(51 51 51 / 0.92);
+  }
+
+  .lightbox img {
+    width: 100%;
+    max-height: 94vh;
+    object-fit: contain;
+  }
+
+  .lightbox__close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .lightbox__close svg {
+    width: 1.2rem;
+  }
+
+  /* Info */
+  .info {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+  }
+
+  .info__cat {
+    text-decoration: none;
+  }
+
+  .info__cat:hover {
+    color: var(--ink);
+  }
+
+  .info h1 {
+    font-size: var(--step-3);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .info__sku {
+    font-size: 0.875rem;
+    color: var(--ink-3);
+  }
+
+  .info__desc {
+    color: var(--ink-2);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  .info__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .info__note {
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .info__warranty {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    margin-top: 0.5rem;
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+  }
+
+  .info__warranty svg {
+    width: 1.5rem;
+    flex: none;
+    color: var(--accent-ink);
+  }
+
+  .info__warranty div {
+    display: grid;
+    gap: 0.1rem;
+    font-size: 0.9375rem;
+  }
+
+  .info__warranty span {
+    color: var(--ink-2);
+  }
+
+  /* Specs */
+  .specs,
+  .about {
+    display: grid;
+    gap: 0.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .specs h2,
+  .about h2 {
+    margin-bottom: 0.75rem;
+    font-size: var(--step-2);
+  }
+
+  .specs__group {
+    border-top: 1px solid var(--line);
+  }
+
+  .specs__group:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .specs__group summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .specs__group summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .specs__group summary svg {
+    width: 1.1rem;
+    transition: transform 0.2s var(--ease);
+  }
+
+  .specs__group[open] summary svg {
+    transform: rotate(180deg);
+  }
+
+  .specs dl {
+    display: grid;
+    margin: 0 0 1rem;
+  }
+
+  .specs dl div {
+    display: grid;
+    grid-template-columns: minmax(8rem, 40%) 1fr;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed var(--line-soft);
+    font-size: 0.9375rem;
+  }
+
+  .specs dl div:last-child {
+    border-bottom: 0;
+  }
+
+  .specs dt {
+    color: var(--ink-3);
+  }
+
+  .specs dd {
+    margin: 0;
+    color: var(--ink);
+  }
+
+  .specs__list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+
+  .specs__list li {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .specs__list svg {
+    width: 1.1rem;
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--accent-ink);
+  }
+
+  @media (max-width: 56rem) {
+    .product {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .gallery {
+      position: static;
+    }
+
+    .info__actions .btn {
+      flex: 1 1 auto;
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .specs dl div {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+    }
+  }
+</style>
+
+<script>
+  const gallery = document.querySelector<HTMLElement>('[data-gallery]');
+  if (gallery) {
+    const main = gallery.querySelector<HTMLImageElement>('[data-main]')!;
+    const lightbox = gallery.querySelector<HTMLDialogElement>('[data-lightbox]')!;
+    const lightboxImg = gallery.querySelector<HTMLImageElement>('[data-lightbox-img]')!;
+    const thumbs = [...gallery.querySelectorAll<HTMLButtonElement>('.gallery__thumb')];
+
+    for (const thumb of thumbs) {
+      thumb.addEventListener('click', () => {
+        main.src = thumb.dataset.src!;
+        main.width = Number(thumb.dataset.w);
+        main.height = Number(thumb.dataset.h);
+        thumbs.forEach((t) => t.removeAttribute('aria-current'));
+        thumb.setAttribute('aria-current', 'true');
+      });
+    }
+
+    gallery.querySelector('[data-zoom]')?.addEventListener('click', () => {
+      lightboxImg.src = main.src;
+      lightbox.showModal();
+    });
+    // Click on the backdrop closes the dialog
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) lightbox.close();
+    });
+  }
+</script>

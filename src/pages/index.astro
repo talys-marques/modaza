@@ -1,0 +1,675 @@
+---
+import { url } from '../lib/url.mjs';
+import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Faq from '../components/Faq.astro';
+import Icon from '../components/Icon.astro';
+import Marca from '../components/Marca.astro';
+import Forma from '../components/Forma.astro';
+import { catalogo } from '../lib/catalogo.mjs';
+import { faqLd } from '../lib/seo.mjs';
+import { REVENDAS, SITE } from '../config.mjs';
+
+const { produtos, pilares, hero, destaques, catalogos } = catalogo();
+const totalSubs = new Set(pilares.flatMap((p) => p.subcategorias.map((s) => s.slug))).size;
+const [heroMain, ...heroSide] = hero;
+const websiteLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.nome,
+  url: SITE.url,
+  potentialAction: { '@type': 'SearchAction', target: `${SITE.url}/produtos/?busca={busca}`, 'query-input': 'required name=busca' },
+};
+---
+
+<Base jsonLd={[websiteLd, faqLd()]} image={heroMain.src}>
+  <!-- Hero -->
+  <section class="hero" id="home">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <span class="eyebrow">Construir · Decorar · Iluminar</span>
+        <h1>Ambientes com design, qualidade e acabamento que valorizam cada espaço.</h1>
+        <p class="lead">
+          Porcelanatos, pisos, painéis ripados, metais, louças e iluminação para quem constrói e reforma com cuidado em cada detalhe.
+        </p>
+        <div class="hero__cta">
+          <a class="btn" href={url('/produtos/')}>Conhecer os produtos <Icon name="arrow-right" /></a>
+          <a class="btn btn--ghost" href={url('/#ondeencontrar')}>Onde encontrar</a>
+        </div>
+        <dl class="hero__stats">
+          <div><dt>Produtos</dt><dd>{produtos.length}+</dd></div>
+          <div><dt>Linhas</dt><dd>{totalSubs}</dd></div>
+          <div><dt>Garantia</dt><dd>até 5 anos</dd></div>
+        </dl>
+      </div>
+      <div class="hero__media">
+        <figure class="hero__main">
+          <img src={heroMain.src} width={heroMain.w} height={heroMain.h} alt={heroMain.alt} fetchpriority="high" />
+          <div class="hero__frase">
+            <Marca name="frase-conceito" />
+          </div>
+        </figure>
+        {
+          heroSide.map((img) => (
+            <figure class="hero__side">
+              <img src={img.thumb} width={img.tw} height={img.th} alt={img.alt} loading="lazy" />
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Pillars -->
+  <section class="section" id="produtos">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-head__text">
+          <span class="eyebrow">Nossos produtos</span>
+          <h2>Para cada ambiente, um produto Modaza para compor.</h2>
+        </div>
+        <a class="link-arrow" href={url('/produtos/')}>Ver todos os produtos <Icon name="arrow-right" /></a>
+      </div>
+      <div class="pillars">
+        {
+          pilares.map((p) => (
+            <article class="pillar" data-pilar={p.slug}>
+              <a href={p.url} class="pillar__media" tabindex="-1" aria-hidden="true">
+                {p.capa && <img src={p.capa.thumb} width={p.capa.tw} height={p.capa.th} alt="" loading="lazy" />}
+                <span class="pillar__badge">
+                  <Forma pilar={p.slug} />
+                </span>
+              </a>
+              <div class="pillar__body">
+                <h3>
+                  <a href={p.url}>{p.nome}</a>
+                </h3>
+                <p class="pillar__tagline">
+                  <strong>{p.nome}</strong> faz parte da sua vida
+                </p>
+                <p>{p.resumo}</p>
+                <ul class="chips">
+                  {p.subcategorias.slice(0, 5).map((s) => (
+                    <li>
+                      <a class="chip" href={s.url}>
+                        {s.nome}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <a class="link-arrow" href={p.url}>
+                  {p.produtos.length} produtos em {p.nome} <Icon name="arrow-right" />
+                </a>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Highlights -->
+  <section class="section section--white">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-head__text">
+          <span class="eyebrow">Destaques</span>
+          <h2>Escolhas para inspirar o seu projeto</h2>
+        </div>
+      </div>
+      <ul class="product-grid highlights">
+        {destaques.map((p) => <ProductCard produto={p} />)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="section section--dark about" id="quemsomos">
+    <div class="container about__grid">
+      <div class="about__title">
+        <span class="eyebrow">Quem somos</span>
+        <Marca name="frase-conceito" class="about__frase" decorative />
+        <h2>Fazer parte da sua vida é o nosso propósito.</h2>
+      </div>
+      <div class="about__text">
+        <p class="lead">
+          Somos uma empresa brasileira com uma linha completa de produtos para a casa, no segmento de construção, pensada para os mais
+          variados desejos e projetos.
+        </p>
+        <p>
+          Com produtos que unem sofisticação, acabamento superior e tecnologia, ajudamos a construir lares e sonhos, levando beleza,
+          elegância e modernidade para cada ambiente. Momentos únicos nos movem a oferecer produtos autênticos, com design diferenciado.
+        </p>
+        <ul class="about__values">
+          <li data-pilar="construir"><Icon name="layers" /><span><strong>Linha completa</strong> do piso à iluminação</span></li>
+          <li data-pilar="decorar"><Icon name="sparkle" /><span><strong>Design</strong> e acabamento superior</span></li>
+          <li data-pilar="iluminar"><Icon name="shield" /><span><strong>Garantia</strong> contra defeitos de fabricação</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Catalogs -->
+  <section class="section section--deep">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-head__text">
+          <span class="eyebrow">Catálogos</span>
+          <h2>Todas as linhas em detalhes</h2>
+          <p>Baixe os catálogos completos, com fotos, medidas e especificações de cada produto.</p>
+        </div>
+        <a class="link-arrow" href={url('/catalogos/')}>Ver todos os catálogos <Icon name="arrow-right" /></a>
+      </div>
+      <ul class="catalog-strip">
+        {
+          catalogos.map((c) => (
+            <li>
+              <a href={url('/catalogos/')} class="catalog-strip__item">
+                {c.capaImg && <img src={c.capaImg.thumb} width={c.capaImg.tw} height={c.capaImg.th} alt="" loading="lazy" />}
+                <span>{c.titulo}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Where to buy -->
+  <section class="section" id="ondeencontrar">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-head__text">
+          <span class="eyebrow">Onde encontrar</span>
+          <h2>Compre Modaza em lojas e revendas autorizadas</h2>
+          <p>O site da Modaza é um catálogo. Na hora da compra, você é atendido por um parceiro de confiança.</p>
+        </div>
+      </div>
+      <ul class="stores">
+        {
+          REVENDAS.map((r) => (
+            <li class="store">
+              <div class="store__logo">
+                <img src={r.logo} alt={r.nome} loading="lazy" />
+              </div>
+              <div class="store__body">
+                <h3>{r.nome}</h3>
+                <p class="muted">{r.tipo}</p>
+              </div>
+              {r.link && (
+                <a class="btn btn--ghost store__cta" href={r.link} target="_blank" rel="noopener">
+                  <Icon name={r.link.includes('wa.me') ? 'whatsapp' : 'store'} />
+                  {r.acao}
+                </a>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section--white" id="faq">
+    <div class="container faq-grid">
+      <div class="section-head__text">
+        <span class="eyebrow">Perguntas frequentes</span>
+        <h2>Dúvidas?</h2>
+        <p class="lead">Veja as respostas mais procuradas. Se não encontrar o que precisa, fale com o nosso atendimento.</p>
+        <a class="link-arrow" href={url('/atendimento-ao-cliente/')}>Ir para o atendimento <Icon name="arrow-right" /></a>
+      </div>
+      <Faq />
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section section--tight" id="contato">
+    <div class="container">
+      <div class="contact-band">
+        <div>
+          <span class="eyebrow">Contato</span>
+          <h2>Precisa de ajuda com um produto ou com a garantia?</h2>
+        </div>
+        <div class="contact-band__actions">
+          <a class="btn" href={`https://wa.me/${SITE.whatsapp.numero}`} target="_blank" rel="noopener"><Icon name="whatsapp" /> {SITE.whatsapp.exibicao}</a>
+          <a class="btn btn--ghost" href={`mailto:${SITE.email}`}><Icon name="mail" /> {SITE.email}</a>
+          <a class="btn btn--ghost" href={url('/atendimento-ao-cliente/#formulario')}>Enviar mensagem</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Hero */
+  .hero {
+    padding-block: clamp(2rem, 1rem + 4vw, 4.5rem) clamp(3rem, 2rem + 4vw, 5.5rem);
+  }
+
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: center;
+  }
+
+  .hero__text {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: var(--step-4);
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    line-height: 1.04;
+  }
+
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .hero__stats {
+    display: flex;
+    gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+    margin: 1rem 0 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .hero__stats div {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .hero__stats dt {
+    order: 2;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+
+  .hero__stats dd {
+    margin: 0;
+    font-size: var(--step-2);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .hero__media {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0.85rem;
+    aspect-ratio: 1.25;
+  }
+
+  .hero__media figure {
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--bg-deep);
+  }
+
+  .hero__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero__main {
+    position: relative;
+    grid-row: 1 / 3;
+  }
+
+  /* Reserve box (manual, "Box de reserva"): creme panel that keeps the artwork legible over photos */
+  .hero__frase {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    padding: clamp(0.85rem, 0.5rem + 1vw, 1.35rem);
+    background: var(--creme);
+    color: var(--carbono);
+  }
+
+  .hero__frase :global(svg) {
+    width: clamp(4.5rem, 3rem + 4vw, 7.5rem);
+    height: auto;
+  }
+
+  /* Pillars */
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: clamp(1rem, 0.5rem + 1.5vw, 1.75rem);
+  }
+
+  .pillar {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .pillar__media {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--pilar) var(--estampa) 0 0 / auto 50% repeat;
+    border-bottom: 6px solid var(--pilar);
+  }
+
+  .pillar__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease);
+  }
+
+  .pillar:hover .pillar__media img {
+    transform: scale(1.04);
+  }
+
+  .pillar__badge {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    background: var(--creme);
+  }
+
+  .pillar__badge :global(svg) {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .pillar__body {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    padding: 1.5rem 1.5rem 1.75rem;
+  }
+
+  .pillar__body h3 {
+    font-size: var(--step-2);
+  }
+
+  .pillar__body h3 a {
+    text-decoration: none;
+  }
+
+  .pillar__body p {
+    color: var(--ink-2);
+  }
+
+  /* Line tagline: first word in the line color */
+  .pillar__body .pillar__tagline {
+    margin-top: -0.6rem;
+    color: var(--ink);
+    font-size: 0.9375rem;
+  }
+
+  .pillar__tagline strong {
+    color: var(--pilar-ink);
+    font-weight: 600;
+  }
+
+  .pillar__body .chips {
+    margin-bottom: 0.5rem;
+  }
+
+  .pillar__body .chip {
+    background: var(--bg);
+    border-color: transparent;
+    font-size: 0.8125rem;
+  }
+
+  .pillar__body .chip:hover {
+    border-color: var(--ink);
+  }
+
+  .pillar__body .link-arrow {
+    justify-self: start;
+  }
+
+  /* 8 highlights: always full rows (4, then 2 on small screens) */
+  .highlights {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  @media (max-width: 56rem) {
+    .highlights {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* About */
+  .about__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 1rem + 4vw, 6rem);
+  }
+
+  .about__title {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+
+  .about h2 {
+    font-size: var(--step-2);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .about__frase {
+    width: clamp(10rem, 7rem + 10vw, 16rem);
+    height: auto;
+    margin-block: 1rem 0.5rem;
+    color: var(--creme);
+  }
+
+  .about__text {
+    display: grid;
+    gap: 1.25rem;
+    color: #cfccc6;
+  }
+
+  .about__text .lead {
+    color: var(--creme);
+  }
+
+  .about__values {
+    display: grid;
+    gap: 0;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid rgb(244 242 239 / 0.12);
+  }
+
+  .about__values li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgb(244 242 239 / 0.12);
+  }
+
+  .about__values svg {
+    width: 1.4rem;
+    flex: none;
+    color: var(--pilar);
+  }
+
+  .about__values strong {
+    color: var(--creme);
+  }
+
+  /* Catalog strip */
+  .catalog-strip {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .catalog-strip__item {
+    display: grid;
+    gap: 0.75rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  .catalog-strip__item img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: var(--radius);
+    background: #fff;
+    transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+  }
+
+  .catalog-strip__item:hover img {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+  }
+
+  /* Stores */
+  .stores {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .store {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+  }
+
+  .store__logo {
+    display: grid;
+    place-items: center;
+    height: 6rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+  }
+
+  .store__logo img {
+    max-height: 4.5rem;
+    max-width: 70%;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .store__body h3 {
+    font-size: 1.125rem;
+  }
+
+  .store__body p {
+    font-size: 0.875rem;
+  }
+
+  .store__cta {
+    width: 100%;
+  }
+
+  /* FAQ */
+  .faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(2rem, 1rem + 4vw, 6rem);
+    align-items: start;
+  }
+
+  .faq-grid h2 {
+    font-size: var(--step-3);
+  }
+
+  .faq-grid .link-arrow {
+    justify-self: start;
+  }
+
+  /* Contact */
+  .contact-band {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+    background: var(--surface);
+    border: 1px solid var(--line-soft);
+    border-radius: calc(var(--radius) * 1.5);
+  }
+
+  .contact-band > div:first-child {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 30rem;
+  }
+
+  .contact-band h2 {
+    font-size: var(--step-2);
+  }
+
+  .contact-band__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 64rem) {
+    .catalog-strip {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 56rem) {
+    .hero__grid,
+    .about__grid,
+    .faq-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hero__media {
+      aspect-ratio: 1.15;
+    }
+  }
+
+  @media (max-width: 34rem) {
+    .catalog-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hero__stats {
+      gap: 1.25rem;
+    }
+
+    .contact-band__actions .btn {
+      width: 100%;
+    }
+
+    .faq-grid :global(.faq__item p) {
+      padding-right: 0;
+    }
+  }
+</style>
