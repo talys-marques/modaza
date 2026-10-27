@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { writeFile, mkdir, access } from 'node:fs/promises';
 import { redirecionamentos, formatRedirects } from './src/lib/redirecionamentos.mjs';
+import { formatHtaccess } from './src/lib/htaccess.mjs';
 
 // Previews such as GitHub Pages set SITE_URL (https://talys-marques.github.io) and BASE_PATH (/modaza)
 const site = process.env.SITE_URL || 'https://modaza.com.br';
@@ -14,8 +15,9 @@ const redirectPage = (to) =>
   `<meta name="robots" content="noindex"><meta http-equiv="refresh" content="0;url=${escapeAttr(to)}">` +
   `</head><body><a href="${escapeAttr(to)}">Continuar</a></body></html>\n`;
 
-// Writes dist/_redirects (Cloudflare Pages / Netlify format) after every build.
-// GitHub Pages ignores that file, so there each old folder-style URL also gets an HTML redirect page.
+// Writes dist/_redirects (Cloudflare Pages / Netlify format) and dist/.htaccess (Apache/LiteSpeed,
+// e.g. Hostinger) after every build. GitHub Pages ignores both, so there each old folder-style URL
+// gets an HTML redirect page instead.
 const redirectsFile = {
   name: 'modaza-redirects',
   hooks: {
@@ -23,7 +25,11 @@ const redirectsFile = {
       const list = redirecionamentos();
       await writeFile(new URL('_redirects', dir), formatRedirects(list));
       logger.info(`_redirects com ${list.length} regras`);
-      if (!githubPages) return;
+      if (!githubPages) {
+        await writeFile(new URL('.htaccess', dir), formatHtaccess(list));
+        logger.info('.htaccess gerado');
+        return;
+      }
 
       let pages = 0;
       for (const r of list.filter((r) => r.de.endsWith('/'))) {

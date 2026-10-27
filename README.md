@@ -98,9 +98,35 @@ SITE_URL=https://talys-marques.github.io BASE_PATH=/modaza GITHUB_PAGES=true npm
 BASE_PATH=/modaza npm run verificar
 ```
 
+## Publicação na Hostinger
+
+O build também gera `dist/.htaccess` (lido pela Hostinger e por qualquer servidor Apache/LiteSpeed), exceto quando `GITHUB_PAGES=true`. Ele:
+
+- força HTTPS e redireciona `www.modaza.com.br` para `modaza.com.br` (o certificado SSL grátis precisa estar ativo no hPanel);
+- aplica as mesmas regras do `_redirects`, inclusive os PDFs antigos do `/wp-content/`;
+- usa `404.html` como página de erro;
+- define o cache: páginas sempre revalidam, CSS/JS/fontes de `/_astro/` ficam em cache por 1 ano e imagens por 7 dias.
+
+Não edite o `.htaccess` no servidor: o próximo deploy o sobrescreve. Ajustes vão em `src/lib/htaccess.mjs`.
+
+O workflow `.github/workflows/hostinger.yml` gera o site e envia o `dist/` por FTP a cada push na `main`, ou à mão em **Actions › Deploy na Hostinger › Run workflow**. **Ele fica desligado até a variável `HOSTINGER_FTP_SERVER` existir**, e a partir daí cada push substitui o site no ar. Configure em **Settings › Secrets and variables › Actions**:
+
+| Tipo | Nome | Valor |
+|---|---|---|
+| Variável | `HOSTINGER_FTP_SERVER` | Endereço FTP do hPanel (**Arquivos › Contas FTP**), ex.: `ftp.modaza.com.br` |
+| Secret | `HOSTINGER_FTP_USERNAME` | Usuário FTP (ex.: `u123456789.modaza.com.br`) |
+| Secret | `HOSTINGER_FTP_PASSWORD` | Senha da conta FTP |
+| Variável (opcional) | `HOSTINGER_FTP_DIR` | Pasta de destino, terminando em `/`. Se o FTP abrir fora do `public_html`, use `public_html/`. Padrão: `./` |
+| Variável (opcional) | `HOSTINGER_FTP_PROTOCOL` | `ftps` (padrão) ou `ftp`, se a conexão segura falhar |
+| Variável (opcional) | `SITE_URL` | Padrão: `https://modaza.com.br` |
+
+O envio é incremental: a action guarda `.ftp-deploy-sync-state.json` no servidor e só manda o que mudou (o primeiro deploy envia tudo, cerca de 3 mil arquivos). Arquivos enviados à mão não são apagados.
+
+**PDFs dos catálogos na Hostinger:** sem o limite de 25 MB do Cloudflare, eles podem ficar no próprio servidor. Envie-os por FTP para `public_html/arquivos/catalogos/` e deixe `PUBLIC_ARQUIVOS_URL` vazio: o site já aponta para `/arquivos/catalogos/{arquivo}`.
+
 ## Pendências antes de publicar
 
-- [ ] Hospedar os PDFs dos catálogos e definir `PUBLIC_ARQUIVOS_URL`
+- [ ] Hospedar os PDFs dos catálogos (na Hostinger, em `public_html/arquivos/catalogos/`; em outro lugar, definir `PUBLIC_ARQUIVOS_URL`)
 - [ ] Time de CRM criar o formulário de contato na Emarsys e preencher `EMARSYS_CONTATO` em `src/config.mjs` (até lá, o formulário abre um e-mail para contato@modaza.com.br)
 - [ ] Confirmar o WhatsApp da KZA Decor (o do site antigo, `wa.me/5195134834`, não tem o código do país)
 - [ ] Revisar os 22 produtos de `dados/produtos-em-analise.csv`
